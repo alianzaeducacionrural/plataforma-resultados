@@ -69,9 +69,7 @@ export default function Panorama() {
 
   return (
     <>
-      <PageHeader titulo="Panorama">
-        <span className="chip on">Token maestro</span>
-      </PageHeader>
+      <PageHeader titulo="Panorama" />
       <FiltroGlobal conBusqueda={false} />
 
       <div className="content">

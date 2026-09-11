@@ -87,9 +87,7 @@ export default function Sidebar({ modo, unica }) {
       </nav>
 
       <div className="sidebar-foot">
-        {modo === 'institucion'
-          ? 'Solo ves los datos de tu institución.'
-          : 'Vista interna — token maestro. Datos agregados, sin información de estudiantes.'}
+        {modo === 'institucion' && 'Solo ves los datos de tu institución.'}
         <div className="sidebar-credito">
           CREADO POR EL COMITÉ DE CAFETEROS DE CALDAS - ÁREA DE EDUCACIÓN
         </div>
