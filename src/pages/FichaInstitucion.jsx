@@ -85,6 +85,15 @@ export default function FichaInstitucion() {
       sub: s?.inscritos != null ? `de ${fmtNum(s.inscritos)} inscritos` : '',
     },
   ]
+  if (inst.clasificacionActual) {
+    const anioClasif = inst.historico.anios[inst.historico.anios.length - 1]
+    kpis.push({
+      label: `Clasificación ICFES ${anioClasif}`,
+      value: inst.clasificacionActual,
+      sub: 'A+ a D · ver histórico →',
+      tono: ['A+', 'A', 'B'].includes(inst.clasificacionActual) ? 'ok' : inst.clasificacionActual === 'C' ? '' : 'alert',
+    })
+  }
 
   const comps = q ? competenciasQsqs(inst) : []
   const compsPorArea = {}
@@ -130,6 +139,11 @@ export default function FichaInstitucion() {
             ))}
           </select>
         </label>
+        {inst.historico && (
+          <Link to={`/historico?dane=${inst.dane}`} className="btn ghost sm">
+            Ver histórico
+          </Link>
+        )}
         <Link to={`/ruta?dane=${inst.dane}`} className="btn primary sm">
           Ruta de mejoramiento
         </Link>

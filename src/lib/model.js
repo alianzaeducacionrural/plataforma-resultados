@@ -103,6 +103,82 @@ export function buildModel(datos) {
     })
   }
 
+  // ---------- histórico Saber 11 (2023-2025) ----------
+  // Formato compacto de saber11_historico: DANE, MAT (código de 2 letras + G para
+  // el global), ANIO (2 dígitos), PUNTAJE, CAT (A+/A/B/C/D, solo en filas MAT=G).
+  const MAT_AREA = {
+    LC: 'Lectura Crítica',
+    MT: 'Matemáticas',
+    SC: 'Sociales y Ciudadanas',
+    CN: 'Ciencias Naturales',
+    IN: 'Inglés',
+  }
+  const MATERIA_KEY = {
+    [fold('Lectura crítica')]: 'Lectura Crítica',
+    [fold('Matemáticas')]: 'Matemáticas',
+    [fold('Sociales y ciudadanas')]: 'Sociales y Ciudadanas',
+    [fold('Ciencias naturales')]: 'Ciencias Naturales',
+    [fold('Inglés')]: 'Inglés',
+    [fold('PROMEDIO GLOBAL')]: 'Global',
+    [fold('PUNTAJE GLOBAL')]: 'Global',
+  }
+  const anioCompleto = (v) => {
+    const n = num(v)
+    if (n == null) return null
+    return n < 100 ? 2000 + n : n
+  }
+
+  const histRows = datos?.historico?.historico ?? []
+  const historicoPorDane = new Map()
+  for (const r of histRows) {
+    const dane = String(r.DANE || '')
+    if (!dane) continue
+    if (!historicoPorDane.has(dane))
+      historicoPorDane.set(dane, { anios: new Set(), global: {}, clasificacion: {}, areas: {} })
+    const h = historicoPorDane.get(dane)
+    const anio = anioCompleto(r.ANIO)
+    if (anio == null) continue
+    h.anios.add(anio)
+    const puntaje = num(r.PUNTAJE)
+    if (r.MAT === 'G') {
+      if (puntaje != null) h.global[anio] = puntaje
+      if (r.CAT) h.clasificacion[anio] = String(r.CAT).trim()
+    } else {
+      const area = MAT_AREA[r.MAT]
+      if (!area || puntaje == null) continue
+      if (!h.areas[area]) h.areas[area] = {}
+      h.areas[area][anio] = puntaje
+    }
+  }
+  const normalesSet = new Set((datos?.historico?.normales ?? []).map((r) => String(r.DANE || '')))
+
+  // referencias por año: {area: {anio: puntaje}}, y por grupo para zonas
+  const refPorAnio = (filas) => {
+    const m = {}
+    for (const r of filas) {
+      const area = MATERIA_KEY[fold(r.MATERIA || '')]
+      const anio = anioCompleto(r.ANIO)
+      const puntaje = num(r.PUNTAJE)
+      if (!area || anio == null || puntaje == null) continue
+      if (!m[area]) m[area] = {}
+      m[area][anio] = puntaje
+    }
+    return m
+  }
+  const refColombiaHist = refPorAnio(datos?.historico?.ref_colombia ?? [])
+  const refDepartamentoHist = refPorAnio(datos?.historico?.ref_departamento ?? [])
+  const refZonasHist = {}
+  for (const r of datos?.historico?.ref_zonas ?? []) {
+    const grupo = r.GRUPO
+    const area = MATERIA_KEY[fold(r.MATERIA || '')]
+    const anio = anioCompleto(r.ANIO)
+    const puntaje = num(r.PUNTAJE)
+    if (!grupo || !area || anio == null || puntaje == null) continue
+    if (!refZonasHist[grupo]) refZonasHist[grupo] = {}
+    if (!refZonasHist[grupo][area]) refZonasHist[grupo][area] = {}
+    refZonasHist[grupo][area][anio] = puntaje
+  }
+
   // ---------- catálogo ----------
   const cat = new Map()
   const upsert = (dane, patch) => {
@@ -254,6 +330,10 @@ export function buildModel(datos) {
       : []
     const prioritarias = areasS11.filter((a) => a.estado === 'alert').map((a) => a.area)
     const gapGlobalCol = s?.global != null && s?.ref?.Colombia != null ? s.global - s.ref.Colombia : null
+    const hRaw = historicoPorDane.get(c.dane)
+    const anios = hRaw ? [...hRaw.anios].sort() : []
+    const historico = hRaw ? { anios, global: hRaw.global, clasificacion: hRaw.clasificacion, areas: hRaw.areas } : null
+    const clasificacionActual = anios.length ? hRaw.clasificacion[anios[anios.length - 1]] || null : null
     return {
       ...c,
       nombre: c.nombre || '(sin nombre)',
@@ -271,6 +351,9 @@ export function buildModel(datos) {
       areasS11,
       s11: s,
       qsqs: q,
+      historico,
+      clasificacionActual,
+      esNormal: normalesSet.has(c.dane),
     }
   })
   instituciones.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
@@ -284,11 +367,35 @@ export function buildModel(datos) {
     municipios,
     periodo: firstDefined(instituciones.map((i) => i.s11?.periodo)),
     benchComp,
+    historicoRef: { colombia: refColombiaHist, departamento: refDepartamentoHist, zonas: refZonasHist },
+    documentos: meta.documentos ?? [],
   }
 }
 
 // =====================================================================
 // Agregados: recalculados sobre el subconjunto filtrado.
+
+/**
+ * Puntaje global promedio por año (2023-2025) sobre un conjunto de
+ * instituciones, para el gráfico departamental de Histórico.
+ * Devuelve [{ anio, prom, n }], ordenado por año.
+ */
+export function historicoGlobalPromedio(lista) {
+  const porAnio = new Map()
+  for (const i of lista) {
+    const h = i.historico
+    if (!h) continue
+    for (const anio of h.anios) {
+      const v = h.global[anio]
+      if (v == null) continue
+      if (!porAnio.has(anio)) porAnio.set(anio, [])
+      porAnio.get(anio).push(v)
+    }
+  }
+  return [...porAnio.entries()]
+    .map(([anio, vals]) => ({ anio, prom: media(vals), n: vals.length }))
+    .sort((a, b) => a.anio - b.anio)
+}
 
 /** Resumen por área Saber 11 sobre una lista de instituciones. */
 export function resumenAreasS11(lista) {

@@ -14,10 +14,15 @@ const COLS = [
   { key: 'zonaSector', label: 'Zona · sector', noSort: true },
   { key: 'global', label: 'Puntaje Saber 11', num: true },
   { key: 'banda', label: 'Banda', noSort: true },
+  { key: 'clasificacionActual', label: 'Clasificación' },
   { key: 'gapGlobalCol', label: 'vs Colombia', num: true },
   { key: 'participacionQsqs', label: 'Part. QSQS', num: true },
   { key: 'prioritarias', label: 'Áreas por debajo' },
 ]
+
+// Orden de mejor a peor, para poder ordenar la columna de clasificación.
+const CLASIF_RANK = { 'A+': 0, A: 1, B: 2, C: 3, D: 4 }
+const COLOR_CLASIF = { 'A+': 'ok', A: 'ok', B: 'ok', C: 'warn', D: 'alert' }
 
 export default function Instituciones() {
   const { modelo } = useModelo()
@@ -28,7 +33,7 @@ export default function Instituciones() {
   const filas = useMemo(() => {
     const list = aplicar(modelo.instituciones)
     const dir = sort.dir === 'asc' ? 1 : -1
-    const numerico = ['global', 'gapGlobalCol', 'participacionQsqs'].includes(sort.field)
+    const numerico = ['global', 'gapGlobalCol', 'participacionQsqs', 'clasificacionActual'].includes(sort.field)
     return [...list].sort((a, b) => {
       if (numerico) {
         // sin dato siempre al final
@@ -115,6 +120,16 @@ export default function Instituciones() {
                           <span className="faint">s/d</span>
                         )}
                       </td>
+                      <td>
+                        {d.clasificacionActual ? (
+                          <span className={'tag ' + (COLOR_CLASIF[d.clasificacionActual] || 'neutral')}>
+                            <Dot estado={COLOR_CLASIF[d.clasificacionActual] || 'na'} />
+                            {d.clasificacionActual}
+                          </span>
+                        ) : (
+                          <span className="faint">s/d</span>
+                        )}
+                      </td>
                       <td className="num">
                         {d.gapGlobalCol != null ? (
                           <span className={'delta ' + (d.gapGlobalCol >= 0 ? 'up' : 'down')}>
@@ -165,6 +180,10 @@ export default function Instituciones() {
 }
 
 function valNum(d, field) {
+  if (field === 'clasificacionActual') {
+    const r = CLASIF_RANK[d.clasificacionActual]
+    return r == null ? null : 4 - r // A+ = 4 (mejor) ... D = 0, mismo sentido que "más alto = mejor"
+  }
   return d[field] ?? null
 }
 function cmp(a, b, field) {

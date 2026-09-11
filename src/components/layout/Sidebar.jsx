@@ -36,6 +36,12 @@ const I = {
       <path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" strokeLinecap="round" />
     </svg>
   ),
+  documentos: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" strokeLinejoin="round" />
+      <path d="M14 3v6h6M8 13h8M8 17h5" strokeLinecap="round" />
+    </svg>
+  ),
 }
 
 const NAV = [
@@ -46,6 +52,7 @@ const NAV = [
   { to: '/ruta', icon: I.ruta, label: 'Ruta de mejoramiento' },
   { to: '/historico', icon: I.historico, label: 'Histórico' },
   { to: '/datos', icon: I.datos, label: 'Datos' },
+  { to: '/documentos', icon: I.documentos, label: 'Documentos' },
 ]
 
 export default function Sidebar({ modo, unica }) {

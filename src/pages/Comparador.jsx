@@ -42,6 +42,18 @@ export default function Comparador() {
         },
       },
       {
+        k: 'Clasificación ICFES',
+        get: (i) =>
+          i.clasificacionActual ? (
+            <Semaforo
+              estado={['A+', 'A', 'B'].includes(i.clasificacionActual) ? 'ok' : i.clasificacionActual === 'C' ? 'warn' : 'alert'}
+              texto={i.clasificacionActual}
+            />
+          ) : (
+            <span className="faint">s/d</span>
+          ),
+      },
+      {
         k: 'vs Colombia',
         get: (i) => (i.gapGlobalCol != null ? <Delta valor={i.gapGlobalCol} modo="pts" /> : '—'),
         raw: (i) => i.gapGlobalCol,

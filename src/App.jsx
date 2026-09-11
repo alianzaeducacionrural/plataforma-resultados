@@ -10,6 +10,7 @@ import Comparador from './pages/Comparador.jsx'
 import RutaMejoramiento from './pages/RutaMejoramiento.jsx'
 import Historico from './pages/Historico.jsx'
 import Datos from './pages/Datos.jsx'
+import Documentos from './pages/Documentos.jsx'
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ function Shell() {
               <Route path="/ruta" element={<RutaMejoramiento />} />
               <Route path="/historico" element={<Historico />} />
               <Route path="/datos" element={<Datos />} />
+              <Route path="/documentos" element={<Documentos />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}

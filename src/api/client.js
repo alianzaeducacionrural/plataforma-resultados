@@ -41,10 +41,14 @@ async function pedir(token, vista) {
 
 /**
  * @param {string} token
- * @param {'resumen'|'qsqs'|'saber11'} vista
+ * @param {'resumen'|'qsqs'|'saber11'|'meta'|'historico'} vista
+ * @param {number[]} [esperas] Backoff entre reintentos. Default: 5 intentos,
+ *   ~25s en total (pensado para el 404 flaky del redirect de Apps Script).
+ *   Pasar un esquema más corto para vistas opcionales que no deben demorar
+ *   el resto de la carga si fallan (ver `historico` en fetchResumen).
  * @returns {Promise<object>} el objeto `datos` de la respuesta
  */
-export async function fetchDatos(token, vista = 'resumen') {
+export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4000, 7000, 12000]) {
   if (!API_URL) throw new ApiError('Falta VITE_API_URL (revisá el .env.local)')
   if (!token) throw new ApiError('Falta el token')
 
@@ -52,7 +56,6 @@ export async function fetchDatos(token, vista = 'resumen') {
   if (cache.has(key)) return cache.get(key)
 
   const promise = (async () => {
-    const esperas = [0, 2000, 4000, 7000, 12000]
     for (const espera of esperas) {
       if (espera) await sleep(espera)
       try {
@@ -77,17 +80,28 @@ export async function fetchDatos(token, vista = 'resumen') {
 }
 
 /**
- * QSQS + Saber 11 + tablas de referencia (meta), en pedidos EN SERIE (más
- * chicos y más fiables que el de 3 MB de `resumen`).
+ * QSQS + Saber 11 + tablas de referencia (meta) + histórico 2023-2025, en
+ * pedidos EN SERIE (más chicos y más fiables que el de 3 MB de `resumen`).
  */
 export async function fetchResumen(token) {
   const qsqs = await fetchDatos(token, 'qsqs')
   const saber11 = await fetchDatos(token, 'saber11')
   const meta = await fetchDatos(token, 'meta')
+  // El histórico es un agregado opcional (no bloquea el resto de la app si el
+  // backend todavía no lo tiene desplegado, o si el Sheet fuente no está listo).
+  // Un solo intento con un reintento corto — si falla, no vale la pena hacerle
+  // esperar al usuario los ~25s del backoff completo por una vista no crítica.
+  let historico = null
+  try {
+    historico = await fetchDatos(token, 'historico', [0, 1500])
+  } catch (err) {
+    console.warn('No se pudo cargar el histórico:', err.message)
+  }
   return {
     qsqs: qsqs.qsqs ?? qsqs,
     saber11: saber11.saber11 ?? saber11,
     meta,
+    historico,
   }
 }
 
