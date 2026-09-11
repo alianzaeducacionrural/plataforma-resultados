@@ -496,6 +496,92 @@ export function competenciasQsqs(inst) {
     )
 }
 
+// ---------- QSQS departamental (agregados sobre un conjunto de instituciones) ----------
+// Área acá es Lenguaje/Matemáticas (QSQS), no las 5 áreas de Saber 11. A diferencia de
+// los "aprendizajes" de Saber 11, el % de QSQS (afirmaciones/competencias) SÍ es %
+// de acierto — gap = ee - colombia, "más alto = mejor" es la convención normal.
+export const AREAS_QSQS = ['Lenguaje', 'Matemáticas']
+
+function areasQsqsDeInstitucion(inst) {
+  const comps = competenciasQsqs(inst)
+  return AREAS_QSQS.map((area) => {
+    const enArea = comps.filter((c) => c.area === area && c.ee != null && c.colombia != null)
+    const ee = media(enArea.map((c) => c.ee))
+    const colombia = media(enArea.map((c) => c.colombia))
+    return { area, ee, colombia, gap: ee != null && colombia != null ? ee - colombia : null }
+  })
+}
+
+/** Resumen por área QSQS (Lenguaje/Matemáticas) sobre una lista de instituciones. */
+export function resumenAreasQsqs(lista) {
+  return AREAS_QSQS.map((area) => {
+    const vals = []
+    const refs = []
+    let bajoColombia = 0
+    let conDato = 0
+    for (const i of lista) {
+      const a = areasQsqsDeInstitucion(i).find((x) => x.area === area)
+      if (!a || a.ee == null) continue
+      conDato++
+      vals.push(a.ee)
+      if (a.colombia != null) refs.push(a.colombia)
+      if (a.gap != null && a.gap < 0) bajoColombia++
+    }
+    const prom = media(vals)
+    const promRef = media(refs)
+    const gap = prom != null && promRef != null ? prom - promRef : null
+    return { area, prom, promRef, gap, bajoColombia, conDato }
+  })
+}
+
+/** Competencias QSQS agregadas sobre un conjunto de instituciones (ranking departamental). */
+export function resumenCompetenciasQsqs(lista, { area = null, limite = 200 } = {}) {
+  const by = new Map()
+  for (const inst of lista) {
+    for (const c of competenciasQsqs(inst)) {
+      if (area && c.area !== area) continue
+      if (c.ee == null || c.colombia == null) continue
+      const key = c.grado + ' ‖ ' + c.area + ' ‖ ' + c.competencia
+      if (!by.has(key)) by.set(key, { grado: c.grado, area: c.area, competencia: c.competencia, ee: [], colombia: [] })
+      by.get(key).ee.push(c.ee)
+      by.get(key).colombia.push(c.colombia)
+    }
+  }
+  return [...by.values()]
+    .map((o) => {
+      const ee = media(o.ee)
+      const col = media(o.colombia)
+      return { ...o, ee, col, gap: ee != null && col != null ? ee - col : null, n: o.ee.length }
+    })
+    .filter((o) => o.gap != null)
+    .sort((a, b) => a.gap - b.gap)
+    .slice(0, limite)
+}
+
+/** Matriz municipio × área QSQS (Lenguaje/Matemáticas), brecha promedio vs Colombia. */
+export function heatmapMunicipioAreaQsqs(lista) {
+  const muns = [...new Set(lista.map((i) => i.municipio).filter((m) => m && m !== '—'))].sort((a, b) =>
+    a.localeCompare(b, 'es'),
+  )
+  const filas = muns.map((mun) => {
+    const enMun = lista.filter((i) => i.municipio === mun && i.tieneQsqs)
+    const celdas = AREAS_QSQS.map((area) => {
+      const gaps = []
+      for (const i of enMun) {
+        const a = areasQsqsDeInstitucion(i).find((x) => x.area === area)
+        if (a && a.gap != null) gaps.push(a.gap)
+      }
+      // gap acá es una fracción (0..1); el Heatmap está pensado para puntos
+      // (redondea al entero más cercano) — se pasa a puntos porcentuales para
+      // que la escala de color y las etiquetas tengan sentido.
+      const g = media(gaps)
+      return { area, gap: g != null ? g * 100 : null, n: gaps.length }
+    })
+    return { municipio: mun, celdas }
+  })
+  return { muns, filas }
+}
+
 /** Matriz municipio × área (brecha promedio vs Colombia) para el heatmap. */
 export function heatmapMunicipioArea(lista) {
   const muns = [...new Set(lista.map((i) => i.municipio).filter((m) => m && m !== '—'))].sort((a, b) =>

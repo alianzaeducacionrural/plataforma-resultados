@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
 import LineHistorico from '../components/charts/LineHistorico.jsx'
-import { Semaforo } from '../components/ui.jsx'
+import { PruebaToggle, Semaforo } from '../components/ui.jsx'
 import { useFiltro, useModelo } from '../state/store.jsx'
 import { fmtNum } from '../lib/format.js'
 import { AREAS_S11, historicoGlobalPromedio } from '../lib/model.js'
@@ -66,6 +66,7 @@ function HistoricoDepartamento({ modelo, aplicar }) {
       <PageHeader titulo="Histórico" />
       <FiltroGlobal conBusqueda={false} />
       <div className="content">
+        <PruebaToggle value="saber11" onChange={() => {}} disabledQsqs />
         {!anios.length ? (
           <section className="panel">
             <p className="muted">
@@ -136,6 +137,7 @@ function HistoricoInstitucion({ inst, modelo }) {
         ]}
       />
       <div className="content">
+        <PruebaToggle value="saber11" onChange={() => {}} disabledQsqs />
         {!h ? (
           <section className="panel">
             <p className="muted">Esta institución no tiene histórico 2023-2025 cargado.</p>

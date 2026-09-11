@@ -19,7 +19,7 @@ function etiquetaGap(gap) {
   return (r > 0 ? '+' : '−') + Math.abs(r)
 }
 
-export default function Heatmap({ muns, filas, onCelda }) {
+export default function Heatmap({ filas, onCelda }) {
   const nav = useNavigate()
   if (!filas.length) return <p className="muted">Sin datos de Saber 11 en el filtro actual.</p>
   const areas = filas[0].celdas.map((c) => c.area)

@@ -2,29 +2,30 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import BarrasComparativas from '../components/charts/BarrasComparativas.jsx'
-import { Delta, Semaforo } from '../components/ui.jsx'
+import { Delta, PruebaToggle, Semaforo } from '../components/ui.jsx'
 import { useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
-import { AREAS_S11, bandaGlobal } from '../lib/model.js'
+import { AREAS_S11, bandaGlobal, competenciasQsqs } from '../lib/model.js'
 import { exportarCsv } from '../lib/exportar.js'
 
 export default function Comparador() {
   const { modelo } = useModelo()
+  const [prueba, setPrueba] = useState('saber11')
   const [sel, setSel] = useState([])
 
   const opciones = modelo.instituciones
   const elegidas = sel.map((d) => opciones.find((i) => i.dane === d)).filter(Boolean)
 
   const agregarMunicipio = (mun) => {
-    const danes = opciones
-      .filter((i) => i.municipio === mun && i.tieneS11)
-      .sort((a, b) => (b.global ?? -1) - (a.global ?? -1))
+    const conDato = opciones.filter((i) => i.municipio === mun && (prueba === 'saber11' ? i.tieneS11 : i.tieneQsqs))
+    const danes = [...conDato]
+      .sort((a, b) => (prueba === 'saber11' ? (b.global ?? -1) - (a.global ?? -1) : (b.participacionQsqs ?? -1) - (a.participacionQsqs ?? -1)))
       .slice(0, 6)
       .map((i) => i.dane)
     setSel(danes)
   }
 
-  const filas = useMemo(() => {
+  const filasS11 = useMemo(() => {
     const r = [
       { k: 'Municipio', get: (i) => i.municipio },
       { k: 'Zona · sector', get: (i) => [i.zona, i.sector].filter(Boolean).join(' · ') || '—' },
@@ -59,12 +60,6 @@ export default function Comparador() {
         raw: (i) => i.gapGlobalCol,
         num: true,
       },
-      {
-        k: 'Participación QSQS',
-        get: (i) => (i.participacionQsqs != null ? pct(i.participacionQsqs) : '—'),
-        raw: (i) => i.participacionQsqs,
-        num: true,
-      },
     ]
     for (const area of AREAS_S11) {
       r.push({
@@ -79,6 +74,47 @@ export default function Comparador() {
     }
     return r
   }, [])
+
+  // Filas QSQS: fijas (participación) + una por cada competencia que tenga dato
+  // en al menos una de las instituciones elegidas (unión, no todas tienen las mismas).
+  const filasQsqs = useMemo(() => {
+    const r = [
+      { k: 'Municipio', get: (i) => i.municipio },
+      { k: 'Zona · sector', get: (i) => [i.zona, i.sector].filter(Boolean).join(' · ') || '—' },
+      {
+        k: 'Participación QSQS',
+        get: (i) => (i.participacionQsqs != null ? pct(i.participacionQsqs) : '—'),
+        raw: (i) => i.participacionQsqs,
+        num: true,
+      },
+      {
+        k: 'Aplicación',
+        get: (i) => (i.qsqs?.anio ? `${i.qsqs.aplicacion}/${i.qsqs.anio}` : '—'),
+      },
+    ]
+    const claves = new Map()
+    for (const i of elegidas) {
+      for (const c of competenciasQsqs(i)) {
+        if (c.ee == null) continue
+        const key = c.grado + ' ‖ ' + c.area + ' ‖ ' + c.competencia
+        if (!claves.has(key)) claves.set(key, { grado: c.grado, area: c.area, competencia: c.competencia })
+      }
+    }
+    for (const [, { grado, area, competencia }] of [...claves].sort((a, b) => a[0].localeCompare(b[0], 'es'))) {
+      r.push({
+        k: `${competencia} (${area} · ${grado}°)`,
+        get: (i) => {
+          const c = competenciasQsqs(i).find((x) => x.grado === grado && x.area === area && x.competencia === competencia)
+          return c?.ee != null ? pct(c.ee) : '—'
+        },
+        raw: (i) => competenciasQsqs(i).find((x) => x.grado === grado && x.area === area && x.competencia === competencia)?.ee,
+        num: true,
+      })
+    }
+    return r
+  }, [elegidas])
+
+  const filas = prueba === 'saber11' ? filasS11 : filasQsqs
 
   const mejorPorFila = (f) => {
     if (!f.num) return null
@@ -96,7 +132,7 @@ export default function Comparador() {
             onClick={() => {
               const cols = ['Métrica', ...elegidas.map((i) => i.nombre)]
               const filasCsv = filas.map((f) => [f.k, ...elegidas.map((i) => f.raw ? f.raw(i) ?? '' : String(f.get(i)))])
-              exportarCsv('comparador-instituciones', cols, filasCsv)
+              exportarCsv('comparador-instituciones-' + prueba, cols, filasCsv)
             }}
           >
             ⬇ Exportar CSV
@@ -104,6 +140,7 @@ export default function Comparador() {
         )}
       </PageHeader>
       <div className="content">
+        <PruebaToggle value={prueba} onChange={setPrueba} />
         <section className="panel">
           <div className="panel-head">
             <h2>Elegí instituciones (hasta 6)</h2>
@@ -159,12 +196,14 @@ export default function Comparador() {
 
         {elegidas.length >= 2 ? (
           <>
-            <section className="panel">
-              <div className="panel-head">
-                <h2>Puntaje por área</h2>
-              </div>
-              <BarrasComparativas instituciones={elegidas} />
-            </section>
+            {prueba === 'saber11' && (
+              <section className="panel">
+                <div className="panel-head">
+                  <h2>Puntaje por área</h2>
+                </div>
+                <BarrasComparativas instituciones={elegidas} />
+              </section>
+            )}
 
             <section className="panel">
               <div className="table-wrap">

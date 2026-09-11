@@ -47,7 +47,35 @@ export function NivelesBar({ niveles }) {
   )
 }
 
-/** Control segmentado (ej. filtro Zona/Sector, o tabs Saber11/QSQS). */
+/**
+ * Selector grande y visible Saber 11 / QSQS. Las dos pruebas nunca se muestran
+ * juntas en ninguna página — este es el control que separa una vista de otra,
+ * por eso es más grande y con más contraste que el <Seg> genérico de filtros.
+ */
+export function PruebaToggle({ value, onChange, disabledQsqs = false }) {
+  return (
+    <div className="prueba-toggle">
+      <button
+        type="button"
+        className={'s11' + (value === 'saber11' ? ' active' : '')}
+        onClick={() => onChange('saber11')}
+      >
+        Saber 11
+      </button>
+      <button
+        type="button"
+        className={'qsqs' + (value === 'qsqs' ? ' active' : '')}
+        disabled={disabledQsqs}
+        title={disabledQsqs ? 'Todavía sin datos para esta vista' : undefined}
+        onClick={() => onChange('qsqs')}
+      >
+        QSQS
+      </button>
+    </div>
+  )
+}
+
+/** Control segmentado (ej. filtro Zona/Sector). */
 export function Seg({ value, onChange, options }) {
   return (
     <div className="segmented">

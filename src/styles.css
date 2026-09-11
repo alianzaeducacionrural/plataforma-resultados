@@ -277,6 +277,45 @@ h3 {
   background: var(--primary);
   color: #fff;
 }
+
+/* Selector grande Saber 11 / QSQS — separa por completo las dos pruebas en
+   cada página. A propósito mucho más grande y con más contraste que
+   .segmented: es la decisión más importante de cada vista. */
+.prueba-toggle {
+  display: inline-flex;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.prueba-toggle button {
+  background: var(--panel-bg);
+  border: none;
+  padding: 12px 30px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+  border-right: 2px solid var(--border);
+  cursor: pointer;
+}
+.prueba-toggle button:last-child {
+  border-right: none;
+}
+.prueba-toggle button:hover:not(.active):not(:disabled) {
+  background: var(--panel-2);
+}
+.prueba-toggle button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.prueba-toggle button.s11.active {
+  background: var(--primary);
+  color: #fff;
+}
+.prueba-toggle button.qsqs.active {
+  background: var(--accent);
+  color: #fff;
+}
 .btn {
   display: inline-flex;
   align-items: center;

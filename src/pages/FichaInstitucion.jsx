@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useInstitucionParam } from '../App.jsx'
 import PageHeader from '../components/layout/PageHeader.jsx'
-import { BarRow, Delta, KpiRow, NivelesBar, Seg } from '../components/ui.jsx'
+import { BarRow, Delta, KpiRow, NivelesBar, PruebaToggle } from '../components/ui.jsx'
 import { ErrorEstado } from '../components/Estado.jsx'
 import DotPlotAreas from '../components/charts/DotPlotAreas.jsx'
 import MapaDesempeno from '../components/MapaDesempeno.jsx'
@@ -158,16 +158,7 @@ export default function FichaInstitucion() {
           {q?.anio ? ` · QSQS aplicación ${q.aplicacion}/${q.anio}` : ''}
         </div>
 
-        {s && q && (
-          <Seg
-            value={tab}
-            onChange={setTab}
-            options={[
-              { value: 'saber11', label: 'Saber 11' },
-              { value: 'qsqs', label: 'QSQS' },
-            ]}
-          />
-        )}
+        {s && q && <PruebaToggle value={tab} onChange={setTab} />}
 
         <KpiRow items={tabEfectivo === 'saber11' ? kpis : qsqsKpis} />
 
@@ -257,7 +248,6 @@ export default function FichaInstitucion() {
                       if (!a) return null
                       const r = refArea(area)
                       const gap = a.ee != null && r != null ? a.ee - r : null
-                      const est = semaforo(gap, 'area')
                       const abierta = areaAbierta === area
                       // x.ee/x.colombia son % de error ("responde incorrectamente"), no de
                       // acierto — gap = colombia - ee para que positivo siga siendo "bien"
@@ -273,11 +263,8 @@ export default function FichaInstitucion() {
                           onToggle={() => setAreaAbierta(abierta ? null : area)}
                           area={area}
                           a={a}
-                          r={r}
                           gap={gap}
-                          est={est}
                           aprs={aprs}
-                          refNombre={REF_LABEL[ref] || ref}
                         />
                       )
                     })}
@@ -404,7 +391,7 @@ export default function FichaInstitucion() {
   )
 }
 
-function FragmentRow({ abierta, onToggle, area, a, r, gap, est, aprs, refNombre }) {
+function FragmentRow({ abierta, onToggle, area, a, gap, aprs }) {
   return (
     <>
       <tr className="clickable" onClick={onToggle}>
