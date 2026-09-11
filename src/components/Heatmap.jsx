@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { fmtNum } from '../lib/format.js'
+import { AREAS_CORTO as CORTO } from '../data/saber11.js'
 
 // color por brecha (puntos vs Colombia, escala Saber 11 área 0–100)
 function color(gap) {
@@ -16,14 +17,6 @@ function etiquetaGap(gap) {
   const r = Math.round(gap)
   if (r === 0) return '0'
   return (r > 0 ? '+' : '−') + Math.abs(r)
-}
-
-const CORTO = {
-  'Lectura Crítica': 'Lect. Crítica',
-  Matemáticas: 'Matemát.',
-  'Sociales y Ciudadanas': 'Sociales',
-  'Ciencias Naturales': 'Ciencias',
-  Inglés: 'Inglés',
 }
 
 export default function Heatmap({ muns, filas, onCelda }) {

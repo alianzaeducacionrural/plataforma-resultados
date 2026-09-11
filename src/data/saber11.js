@@ -11,6 +11,24 @@ export const AREAS = [
   'Inglés',
 ]
 
+// Nombres cortos de área, para headers de tabla/gráfico angostos.
+export const AREAS_CORTO = {
+  'Lectura Crítica': 'Lect. Crítica',
+  Matemáticas: 'Matemát.',
+  'Sociales y Ciudadanas': 'Sociales',
+  'Ciencias Naturales': 'Ciencias',
+  Inglés: 'Inglés',
+}
+
+// Siglas de 2 letras, para tablas muy densas (ej. MapaDesempeno).
+export const AREAS_SIGLA = {
+  'Lectura Crítica': 'LC',
+  Matemáticas: 'MT',
+  'Sociales y Ciudadanas': 'CS',
+  'Ciencias Naturales': 'NT',
+  Inglés: 'IN',
+}
+
 // Peso en el puntaje global (ICFES): Lectura, Mate, Sociales y Ciencias = 3; Inglés = 1.
 export const PESO_AREA = {
   'Lectura Crítica': 3,
@@ -49,7 +67,7 @@ const REGLAS = {
   ],
   Matemáticas: [
     [/interpret|represent|lee|extrae|gráfic|tabla|identifica información/i, 0],
-    [/resuelve|calcula|ejecut|plantea|aplica|procedimiento|模型|model/i, 1],
+    [/resuelve|calcula|ejecut|plantea|aplica|procedimiento|modelo/i, 1],
     [/argument|justific|valida|demuestra|razona|concluye|generaliza/i, 2],
   ],
   'Sociales y Ciudadanas': [

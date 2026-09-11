@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
-import { KpiRow, Semaforo } from '../components/ui.jsx'
+import { BarRow, KpiRow, Semaforo } from '../components/ui.jsx'
 import DistribucionBandas from '../components/charts/DistribucionBandas.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import { useFiltro, useModelo } from '../state/store.jsx'
@@ -33,6 +33,7 @@ export default function Panorama() {
     lista.filter((d) => d.participacionQsqs != null),
     (d) => d.participacionQsqs,
   )
+  const qsqsInfo = lista.find((d) => d.qsqs?.anio != null)?.qsqs
 
   const focos = [...areas]
     .filter((a) => a.gap != null)
@@ -58,7 +59,11 @@ export default function Panorama() {
           : 'Saber 11',
       tono: semaforo(gapGlobal, 'global') === 'alert' ? 'alert' : semaforo(gapGlobal, 'global') === 'ok' ? 'ok' : '',
     },
-    { label: 'Participación QSQS', value: pct(partProm), sub: 'estudiantes que presentaron' },
+    {
+      label: 'Participación QSQS',
+      value: pct(partProm),
+      sub: qsqsInfo ? `aplicación ${qsqsInfo.aplicacion} de ${qsqsInfo.anio}` : 'estudiantes que presentaron',
+    },
     {
       label: 'Instituciones en alerta',
       value: fmtNum(enAlerta),
@@ -117,38 +122,15 @@ export default function Panorama() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {areas.map((a) => (
-                <div key={a.area} className="bar-row" style={{ gridTemplateColumns: '150px 1fr 150px' }}>
-                  <Link to={`/areas?area=${encodeURIComponent(a.area)}`} className="lbl">
-                    {a.area}
-                  </Link>
-                  <div className="bar-track">
-                    {a.prom != null && (
-                      <div
-                        className={
-                          'bar-fill' +
-                          (semaforo(a.gap, 'area') === 'alert'
-                            ? ' alert'
-                            : semaforo(a.gap, 'area') === 'warn'
-                              ? ' warn'
-                              : '')
-                        }
-                        style={{ width: (a.prom / 100) * 100 + '%' }}
-                      />
-                    )}
-                    {a.promRef != null && (
-                      <div className="bar-ref" style={{ left: (a.promRef / 100) * 100 + '%' }} />
-                    )}
-                  </div>
-                  <span className="bar-score">
-                    {a.prom != null ? fmtNum(a.prom, 1) : '—'}{' '}
-                    {a.gap != null && (
-                      <span className={'delta ' + (a.gap >= 0 ? 'up' : 'down')}>
-                        {a.gap >= 0 ? '+' : '−'}
-                        {fmtNum(Math.abs(a.gap), 1)}
-                      </span>
-                    )}
-                  </span>
-                </div>
+                <BarRow
+                  key={a.area}
+                  label={<Link to={`/areas?area=${encodeURIComponent(a.area)}`}>{a.area}</Link>}
+                  value={a.prom}
+                  referencia={a.promRef}
+                  max={100}
+                  estado={semaforo(a.gap, 'area')}
+                  refLabel="Colombia"
+                />
               ))}
             </div>
           </section>

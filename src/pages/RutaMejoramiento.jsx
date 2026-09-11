@@ -83,7 +83,7 @@ export default function RutaMejoramiento() {
               <li key={i}>
                 <div style={{ fontWeight: 700 }}>{f.aprendizaje}</div>
                 <div className="muted">
-                  {f.area} · {f.competencia} · % de acierto {pct(f.ee)} vs Colombia {pct(f.col)}{' '}
+                  {f.area} · {f.competencia} · % responde mal {pct(f.ee)} vs Colombia {pct(f.col)}{' '}
                   <Delta valor={f.gap} modo="pct" />
                   {!inst && ` · ${f.n} instituciones`}
                 </div>

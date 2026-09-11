@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useInstitucionParam } from '../App.jsx'
 import PageHeader from '../components/layout/PageHeader.jsx'
-import { BarRow, Delta, KpiRow, NivelesBar } from '../components/ui.jsx'
+import { BarRow, Delta, KpiRow, NivelesBar, Seg } from '../components/ui.jsx'
 import { ErrorEstado } from '../components/Estado.jsx'
 import DotPlotAreas from '../components/charts/DotPlotAreas.jsx'
 import MapaDesempeno from '../components/MapaDesempeno.jsx'
@@ -14,6 +14,7 @@ import {
   AREAS_S11,
   bandaGlobal,
   competenciasQsqs,
+  GRADOS_QSQS,
   media,
   REF_LABEL,
   semaforo,
@@ -26,6 +27,7 @@ export default function FichaInstitucion() {
   const { modelo } = useModelo()
   const [ref, setRef] = useState('Colombia')
   const [areaAbierta, setAreaAbierta] = useState(null)
+  const [tab, setTab] = useState('saber11')
 
   const pares = useMemo(
     () => (inst ? modelo.instituciones.filter((i) => i.municipio === inst.municipio && i.tieneS11) : []),
@@ -91,6 +93,24 @@ export default function FichaInstitucion() {
     ;(compsPorArea[k] = compsPorArea[k] || []).push(c)
   }
 
+  // Saber 11 y QSQS quedan en pestañas separadas (pedido explícito: los datos de las dos
+  // pruebas no deben mezclarse en una sola vista). Si la institución solo tiene una de
+  // las dos, no hace falta mostrar el selector — se fuerza esa pestaña.
+  const tabEfectivo = s && q ? tab : s ? 'saber11' : 'qsqs'
+  const gradosConDato = q?.porGrado?.filter((g) => g.registrados) ?? []
+  const qsqsKpis = q
+    ? [
+        {
+          label: 'Participación QSQS',
+          value: pct(q.participacion),
+          sub: q.registrados != null ? `${fmtNum(q.participantes)} / ${fmtNum(q.registrados)} estudiantes` : '',
+        },
+        { label: 'Aplicación', value: q.anio ? `${q.aplicacion}/${q.anio}` : '—', sub: 'aplicación / año' },
+        { label: 'Grados evaluados', value: fmtNum(gradosConDato.length), sub: `de ${GRADOS_QSQS.length}` },
+        { label: 'Competencias con dato', value: fmtNum(comps.length), sub: 'afirmaciones agrupadas' },
+      ]
+    : []
+
   return (
     <>
       <PageHeader
@@ -124,10 +144,21 @@ export default function FichaInstitucion() {
           {q?.anio ? ` · QSQS aplicación ${q.aplicacion}/${q.anio}` : ''}
         </div>
 
-        <KpiRow items={kpis} />
+        {s && q && (
+          <Seg
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'saber11', label: 'Saber 11' },
+              { value: 'qsqs', label: 'QSQS' },
+            ]}
+          />
+        )}
+
+        <KpiRow items={tabEfectivo === 'saber11' ? kpis : qsqsKpis} />
 
         {/* ---------- Reporte comparativo ---------- */}
-        {s && (
+        {tabEfectivo === 'saber11' && s && (
           <div className="grid cols-2">
             <section className="panel">
               <div className="panel-head">
@@ -162,7 +193,7 @@ export default function FichaInstitucion() {
           </div>
         )}
 
-        {s && pares.length > 1 && (
+        {tabEfectivo === 'saber11' && s && pares.length > 1 && (
           <section className="panel">
             <div className="panel-head">
               <h2>Mapa de desempeño — {inst.municipio}</h2>
@@ -173,6 +204,7 @@ export default function FichaInstitucion() {
         )}
 
         {/* ---------- Saber 11 (detalle) ---------- */}
+        {tabEfectivo === 'saber11' && (
         <section className="panel">
           <div className="panel-head">
             <h2>Saber 11 — detalle por área, grado 11°</h2>
@@ -213,9 +245,12 @@ export default function FichaInstitucion() {
                       const gap = a.ee != null && r != null ? a.ee - r : null
                       const est = semaforo(gap, 'area')
                       const abierta = areaAbierta === area
+                      // x.ee/x.colombia son % de error ("responde incorrectamente"), no de
+                      // acierto — gap = colombia - ee para que positivo siga siendo "bien"
+                      // (institución con menos error que Colombia), igual que en model.js.
                       const aprs = (s.aprendizajes || [])
                         .filter((x) => x.area === area && x.ee != null)
-                        .map((x) => ({ ...x, gap: x.colombia != null ? x.ee - x.colombia : null }))
+                        .map((x) => ({ ...x, gap: x.colombia != null ? x.colombia - x.ee : null }))
                         .sort((x, y) => (x.gap ?? 0) - (y.gap ?? 0))
                       return (
                         <FragmentRow
@@ -238,8 +273,10 @@ export default function FichaInstitucion() {
             </>
           )}
         </section>
+        )}
 
         {/* ---------- QSQS ---------- */}
+        {tabEfectivo === 'qsqs' && (
         <section className="panel">
           <div className="panel-head">
             <h2>Quiero Ser Quiero Saber</h2>
@@ -289,17 +326,49 @@ export default function FichaInstitucion() {
                             />
                           </summary>
                           <div style={{ padding: '4px 0 8px 20px' }}>
-                            {c.afirmaciones.map((af, i) => (
-                              <BarRow
-                                key={i}
-                                label={<span className="faint">{af.texto || `Afirmación ${af.idAfirmacion}`}</span>}
-                                value={af.ee}
-                                referencia={ref === 'ETC' ? af.etc : af.colombia}
-                                max={1}
-                                mode="porcentaje"
-                                estado={semaforo(af.ee != null && af.colombia != null ? af.ee - af.colombia : null, 'frac')}
-                              />
-                            ))}
+                            {c.afirmaciones.map((af, i) =>
+                              af.evidencias?.length ? (
+                                <details key={i} style={{ marginBottom: 2 }}>
+                                  <summary style={{ cursor: 'pointer', listStyle: 'none' }}>
+                                    <BarRow
+                                      label={<span className="faint">{af.texto || `Afirmación ${af.idAfirmacion}`}</span>}
+                                      value={af.ee}
+                                      referencia={ref === 'ETC' ? af.etc : af.colombia}
+                                      max={1}
+                                      mode="porcentaje"
+                                      estado={semaforo(af.ee != null && af.colombia != null ? af.ee - af.colombia : null, 'frac')}
+                                    />
+                                  </summary>
+                                  <div style={{ padding: '2px 0 6px 20px' }}>
+                                    <div className="faint" style={{ marginBottom: 4 }}>
+                                      Evidencias de esta afirmación — QSQS no reporta el resultado de la
+                                      institución a este nivel, solo la referencia:
+                                    </div>
+                                    {af.evidencias.map((ev) => (
+                                      <div key={ev.idEvidencia} className="faint" style={{ padding: '3px 0' }}>
+                                        {ev.texto}
+                                        {ev.bench && (
+                                          <span className="muted">
+                                            {' '}
+                                            — Caldas {pct(ev.bench.etc)} · Colombia {pct(ev.bench.colombia)}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+                              ) : (
+                                <BarRow
+                                  key={i}
+                                  label={<span className="faint">{af.texto || `Afirmación ${af.idAfirmacion}`}</span>}
+                                  value={af.ee}
+                                  referencia={ref === 'ETC' ? af.etc : af.colombia}
+                                  max={1}
+                                  mode="porcentaje"
+                                  estado={semaforo(af.ee != null && af.colombia != null ? af.ee - af.colombia : null, 'frac')}
+                                />
+                              ),
+                            )}
                           </div>
                         </details>
                       )
@@ -315,6 +384,7 @@ export default function FichaInstitucion() {
             </>
           )}
         </section>
+        )}
       </div>
     </>
   )
@@ -341,8 +411,9 @@ function FragmentRow({ abierta, onToggle, area, a, r, gap, est, aprs, refNombre 
           <td colSpan={5}>
             <div className="detail">
               <div className="muted">
-                Aprendizajes evaluados en {area}, ordenados por brecha vs Colombia (barra = institución,
-                marca = Colombia):
+                Aprendizajes evaluados en {area}, ordenados de peor a mejor brecha vs Colombia (barra =
+                institución, marca = Colombia). La barra es % de estudiantes que responde{' '}
+                <strong>mal</strong> al aprendizaje, no de acierto — más corta es mejor.
               </div>
               {aprs.length ? (
                 aprs.map((x, i) => (

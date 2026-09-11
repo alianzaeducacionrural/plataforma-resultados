@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { fmtNum } from '../lib/format.js'
 import { AREAS_S11 } from '../lib/model.js'
+import { AREAS_SIGLA as CORTO } from '../data/saber11.js'
 
 // Bandas de desempeño por brecha vs Colombia (puntos, escala 0–100).
 const BANDAS = [
@@ -14,8 +15,6 @@ function banda(gap) {
   if (gap == null) return null
   return BANDAS.find((b) => gap >= b.min && gap < b.max)
 }
-
-const CORTO = { 'Lectura Crítica': 'LC', Matemáticas: 'MT', 'Sociales y Ciudadanas': 'CS', 'Ciencias Naturales': 'NT', Inglés: 'IN' }
 
 /**
  * Mapa de desempeño: instituciones (filas) × áreas (columnas), color por

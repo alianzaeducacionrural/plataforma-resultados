@@ -7,19 +7,16 @@
 
 import { fold, frac, normSector, normZona, num, titleCase } from './format.js'
 import {
+  AREAS,
   BANDAS_GLOBAL,
   bandaGlobal,
   competenciaDeAprendizaje,
   PESO_AREA,
 } from '../data/saber11.js'
 
-export const AREAS_S11 = [
-  'Lectura Crítica',
-  'Matemáticas',
-  'Sociales y Ciudadanas',
-  'Ciencias Naturales',
-  'Inglés',
-]
+// Las 5 áreas de Saber 11, en orden canónico — la fuente única es data/saber11.js;
+// se reexporta acá con este nombre porque el resto de la app ya lo conoce así.
+export const AREAS_S11 = AREAS
 export const GRADOS_QSQS = ['3', '5', '7', '9']
 export { BANDAS_GLOBAL, bandaGlobal }
 
@@ -80,6 +77,29 @@ export function buildModel(datos) {
       etc: frac(r['% ACIERTOS ETC']),
       region: frac(r['% ACIERTOS REGÍON']),
       colombia: frac(r['% ACIERTOS COLOMBIA']),
+    })
+  }
+
+  // benchmark por evidencia: ID_EVIDENCIA -> {etc, region, colombia}
+  const benchEvid = new Map()
+  for (const r of meta.qsqs_benchmark_evidencia ?? []) {
+    benchEvid.set(String(r.ID_EVIDENCIA), {
+      etc: frac(r['% ACIERTOS ETC']),
+      region: frac(r['% ACIERTOS REGÍON']),
+      colombia: frac(r['% ACIERTOS COLOMBIA']),
+    })
+  }
+  // diccionario de evidencias: grado|area|texto de la afirmación -> [{idEvidencia, texto, bench}]
+  // OJO: qsqs_dic_evidencias no trae ID_AFIRMACION, solo el texto de la afirmación —
+  // por eso se cruza por texto (mismo criterio que ya usa esa hoja), no por ID.
+  const evidPorAfirmacion = new Map()
+  for (const r of meta.qsqs_dic_evidencias ?? []) {
+    const key = fold(String(r.GRADO) + '|' + r.AREA + '|' + (r['AFIRMACIÓN'] || r.AFIRMACION || ''))
+    if (!evidPorAfirmacion.has(key)) evidPorAfirmacion.set(key, [])
+    evidPorAfirmacion.get(key).push({
+      idEvidencia: r.ID_EVIDENCIA,
+      texto: r.EVIDENCIA,
+      bench: benchEvid.get(String(r.ID_EVIDENCIA)) || null,
     })
   }
 
@@ -202,6 +222,11 @@ export function buildModel(datos) {
   for (const r of qa) {
     const k = String(r.DANE)
     const dic = dicAfirm.get(claveAfirm(r.GRADO, r.AREA, r.ID_AFIRMACION))
+    // Las evidencias son solo de referencia (texto + % ETC/Región/Colombia): QSQS no
+    // reporta el resultado de la institución a ese nivel, solo hasta afirmación.
+    const evidencias = dic?.texto
+      ? evidPorAfirmacion.get(fold(String(r.GRADO) + '|' + r.AREA + '|' + dic.texto)) || []
+      : []
     ensureQ(k).afirmaciones.push({
       grado: String(r.GRADO || ''),
       area: r.AREA,
@@ -212,6 +237,7 @@ export function buildModel(datos) {
       etc: frac(r['% ACIERTOS ETC']),
       region: frac(r['% ACIERTOS REGÍON']),
       colombia: frac(r['% ACIERTOS COLOMBIA']),
+      evidencias,
     })
   }
 
@@ -288,7 +314,17 @@ export function resumenAreasS11(lista) {
   })
 }
 
-/** Aprendizajes Saber 11 más flojos del conjunto (promedio EE vs Colombia). */
+/**
+ * Aprendizajes Saber 11 más flojos del conjunto (promedio EE vs Colombia).
+ *
+ * OJO: `ee`/`col` acá NO son % de acierto — son el "% promedio de estudiantes que
+ * responde incorrectamente al aprendizaje" (así lo nombra el ICFES en la fuente). Por
+ * eso el gap se calcula `col - ee` (positivo = la institución tiene MENOS error que
+ * Colombia = bien), para mantener la misma convención "gap positivo = bien" que usa
+ * el resto de la app (semaforo, <Delta>, etc.). Si se calculara `ee - col` como en el
+ * resto de las métricas (que sí son de acierto/puntaje), quedaría invertido: un
+ * aprendizaje con MÁS error que Colombia se vería en verde como fortaleza.
+ */
 export function aprendizajesFlojos(lista, { area = null, limite = 8 } = {}) {
   const by = new Map()
   for (const i of lista) {
@@ -306,7 +342,7 @@ export function aprendizajesFlojos(lista, { area = null, limite = 8 } = {}) {
     .map((o) => {
       const ee = media(o.ee)
       const col = media(o.col)
-      return { ...o, ee, col, gap: ee != null && col != null ? ee - col : null, n: o.ee.length }
+      return { ...o, ee, col, gap: ee != null && col != null ? col - ee : null, n: o.ee.length }
     })
     .filter((o) => o.gap != null)
     .sort((a, b) => a.gap - b.gap)

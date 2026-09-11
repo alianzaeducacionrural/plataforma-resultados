@@ -8,6 +8,7 @@ export default function Datos() {
   const conS11 = modelo.instituciones.filter((i) => i.tieneS11).length
   const conQ = modelo.instituciones.filter((i) => i.tieneQsqs).length
   const anio = modelo.periodo ? new Date(modelo.periodo).getFullYear() : '2025'
+  const qsqsInfo = modelo.instituciones.find((i) => i.qsqs?.anio != null)?.qsqs
 
   return (
     <>
@@ -37,8 +38,14 @@ export default function Datos() {
                   <td className="num">{fmtNum(modelo.municipios.length)}</td>
                 </tr>
                 <tr>
-                  <td className="cell-strong">Aplicación cargada</td>
+                  <td className="cell-strong">Saber 11 — aplicación cargada</td>
                   <td className="num">{anio}</td>
+                </tr>
+                <tr>
+                  <td className="cell-strong">QSQS — aplicación cargada</td>
+                  <td className="num">
+                    {qsqsInfo ? `Aplicación ${qsqsInfo.aplicacion} de ${qsqsInfo.anio}` : '—'}
+                  </td>
                 </tr>
               </tbody>
             </table>

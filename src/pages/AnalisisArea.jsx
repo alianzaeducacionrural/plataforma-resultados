@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
@@ -9,9 +9,22 @@ import { AREAS_S11, aprendizajesFlojos, media, resumenAreasS11, semaforo } from 
 
 export default function AnalisisArea() {
   const { modelo } = useModelo()
-  const { aplicar } = useFiltro()
+  const { aplicar, filtro, set } = useFiltro()
   const [params, setParams] = useSearchParams()
   const area = params.get('area') || AREAS_S11[1]
+
+  // El Heatmap del Panorama navega acá con ?municipio= además de ?area= — lo aplicamos
+  // al filtro global (una sola vez al entrar) y lo sacamos de la URL para que de ahí en
+  // más el filtro se maneje desde el selector de FiltroGlobal, no desde el param.
+  useEffect(() => {
+    const m = params.get('municipio')
+    if (!m) return
+    if (m !== filtro.municipio) set({ municipio: m })
+    const next = new URLSearchParams(params)
+    next.delete('municipio')
+    setParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const lista = useMemo(() => aplicar(modelo.instituciones, { ignorarBusqueda: true }), [modelo, aplicar])
 
@@ -89,13 +102,17 @@ export default function AnalisisArea() {
             <h2>Aprendizajes más flojos del conjunto — {area}</h2>
             <span className="muted">promedio de las instituciones vs Colombia</span>
           </div>
+          <p className="faint" style={{ margin: '0 0 10px' }}>
+            Los porcentajes son de <strong>error</strong>, no de acierto: "% promedio de estudiantes que
+            responde incorrectamente al aprendizaje" (así lo reporta el ICFES). Más alto = peor.
+          </p>
           <div className="table-wrap">
             <table className="data">
               <thead>
                 <tr>
                   <th>Aprendizaje</th>
                   <th>Competencia</th>
-                  <th className="num">% acierto</th>
+                  <th className="num">% responde mal</th>
                   <th className="num">Colombia</th>
                   <th className="num">Brecha</th>
                 </tr>

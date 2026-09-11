@@ -47,6 +47,24 @@ export function NivelesBar({ niveles }) {
   )
 }
 
+/** Control segmentado (ej. filtro Zona/Sector, o tabs Saber11/QSQS). */
+export function Seg({ value, onChange, options }) {
+  return (
+    <div className="segmented">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          className={value === o.value ? 'active' : ''}
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function KpiRow({ items }) {
   return (
     <section className="kpis">

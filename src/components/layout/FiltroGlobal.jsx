@@ -1,22 +1,6 @@
 import { useModelo } from '../../state/store.jsx'
 import { useFiltro } from '../../state/store.jsx'
-
-function Seg({ value, onChange, options }) {
-  return (
-    <div className="segmented">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          className={value === o.value ? 'active' : ''}
-          onClick={() => onChange(o.value)}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
+import { Seg } from '../ui.jsx'
 
 /** Barra de filtro global — scopea toda la app. */
 export default function FiltroGlobal({ conBusqueda = true }) {

@@ -1,14 +1,8 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AREAS_S11 } from '../../lib/model.js'
+import { AREAS_CORTO as CORTO } from '../../data/saber11.js'
 
 const PALETA = ['#2b3440', '#1e8a82', '#c99a2e', '#d1653c', '#6a8caf', '#8a6aaf']
-const CORTO = {
-  'Lectura Crítica': 'Lect. Crítica',
-  Matemáticas: 'Matemát.',
-  'Sociales y Ciudadanas': 'Sociales',
-  'Ciencias Naturales': 'Ciencias',
-  Inglés: 'Inglés',
-}
 
 /** Barras agrupadas: eje X = área, una serie por institución. */
 export default function BarrasComparativas({ instituciones }) {
