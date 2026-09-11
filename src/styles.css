@@ -279,42 +279,51 @@ h3 {
 }
 
 /* Selector grande Saber 11 / QSQS — separa por completo las dos pruebas en
-   cada página. A propósito mucho más grande y con más contraste que
-   .segmented: es la decisión más importante de cada vista. */
+   cada página. Solo hay dos opciones (nunca "ambas"): cada vista muestra una
+   prueba a la vez. Pastilla flotante (no se estira con el contenedor:
+   align-self: flex-start) para que se vea como un control, no como una caja
+   vacía. */
 .prueba-toggle {
   display: inline-flex;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  align-self: flex-start;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
   margin-bottom: 6px;
 }
 .prueba-toggle button {
-  background: var(--panel-bg);
+  background: transparent;
   border: none;
-  padding: 12px 30px;
+  padding: 10px 28px;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-dim);
-  border-right: 2px solid var(--border);
+  border-radius: 999px;
   cursor: pointer;
-}
-.prueba-toggle button:last-child {
-  border-right: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .prueba-toggle button:hover:not(.active):not(:disabled) {
-  background: var(--panel-2);
+  background: var(--border-soft);
+  color: var(--text);
 }
 .prueba-toggle button:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
 }
 .prueba-toggle button.s11.active {
   background: var(--primary);
   color: #fff;
+  box-shadow: 0 1px 4px rgba(43, 52, 64, 0.4);
 }
 .prueba-toggle button.qsqs.active {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 1px 4px rgba(30, 138, 130, 0.4);
 }
 .btn {
   display: inline-flex;

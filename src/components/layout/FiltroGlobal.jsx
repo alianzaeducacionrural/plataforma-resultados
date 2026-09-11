@@ -45,18 +45,6 @@ export default function FiltroGlobal({ conBusqueda = true }) {
           ]}
         />
       </div>
-      <div className="field">
-        <label>Prueba</label>
-        <Seg
-          value={filtro.prueba}
-          onChange={(v) => set({ prueba: v })}
-          options={[
-            { value: 'todas', label: 'Ambas' },
-            { value: 'saber11', label: 'Saber 11' },
-            { value: 'qsqs', label: 'QSQS' },
-          ]}
-        />
-      </div>
       {conBusqueda && (
         <div className="field grow">
           <label htmlFor="fg-q">Buscar institución</label>

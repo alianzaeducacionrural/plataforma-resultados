@@ -49,18 +49,11 @@ export const FILTRO_VACIO = {
   municipio: 'todos',
   zona: 'todas',
   sector: 'todos',
-  prueba: 'todas',
   q: '',
 }
 
 export function filtroActivo(f) {
-  return (
-    f.municipio !== 'todos' ||
-    f.zona !== 'todas' ||
-    f.sector !== 'todos' ||
-    f.prueba !== 'todas' ||
-    f.q.trim() !== ''
-  )
+  return f.municipio !== 'todos' || f.zona !== 'todas' || f.sector !== 'todos' || f.q.trim() !== ''
 }
 
 export function FiltroProvider({ children }) {
@@ -75,8 +68,6 @@ export function FiltroProvider({ children }) {
         if (filtro.municipio !== 'todos' && d.municipio !== filtro.municipio) return false
         if (filtro.zona !== 'todas' && d.zona !== filtro.zona) return false
         if (filtro.sector !== 'todos' && d.sector !== filtro.sector) return false
-        if (filtro.prueba === 'saber11' && !d.tieneS11) return false
-        if (filtro.prueba === 'qsqs' && !d.tieneQsqs) return false
         if (!ignorarBusqueda && q && !d.nombre.toLowerCase().includes(q) && !String(d.dane).includes(q))
           return false
         return true
