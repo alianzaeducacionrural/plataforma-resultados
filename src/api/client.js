@@ -25,7 +25,11 @@ async function pedir(token, vista) {
   try {
     res = await fetch(url, { redirect: 'follow' })
   } catch {
-    throw new ApiError('No se pudo conectar con el servidor. Revisá la conexión.')
+    // Falla de red (sin internet, DNS, CORS, etc.). No es necesariamente
+    // definitivo — una conexión inestable puede recuperarse en el siguiente
+    // intento — así que se trata igual que el 404 flaky del redirect: se
+    // reintenta con el mismo backoff en vez de rendirse en el primer golpe.
+    throw new ApiError('__reintentable__:red')
   }
   const text = await res.text()
   let json
@@ -56,17 +60,21 @@ export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4
   if (cache.has(key)) return cache.get(key)
 
   const promise = (async () => {
+    let falloDeRed = false
     for (const espera of esperas) {
       if (espera) await sleep(espera)
       try {
         return await pedir(token, vista)
       } catch (err) {
-        if (err.message !== '__reintentable__') throw err
+        if (!err.message.startsWith('__reintentable__')) throw err
+        falloDeRed = err.message === '__reintentable__:red'
       }
     }
     throw new ApiError(
-      'El servidor no devolvió datos después de varios intentos. ' +
-        'Puede que la API no esté autorizada, o que Apps Script esté saturado — probá recargar.',
+      falloDeRed
+        ? 'No se pudo conectar con el servidor después de varios intentos. Revisá tu conexión a internet e intentá de nuevo.'
+        : 'El servidor no devolvió datos después de varios intentos. ' +
+            'Puede que la API no esté autorizada, o que Apps Script esté saturado — probá recargar.',
     )
   })()
 
