@@ -253,6 +253,18 @@ h3 {
   outline: 2px solid var(--accent-soft);
   border-color: var(--accent);
 }
+/* Selector de Área en Análisis por área: vive junto a Municipio/Zona/Sector
+   pero no es un filtro de alcance sino el contenido que se está mirando —
+   un poco más marcado para que no se confunda con los demás. */
+.field-area label {
+  color: var(--accent);
+}
+.field-area select {
+  border-color: var(--accent);
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
 .segmented {
   display: flex;
   border: 1px solid var(--border);

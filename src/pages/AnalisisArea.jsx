@@ -40,14 +40,15 @@ export default function AnalisisArea() {
 
   return (
     <>
-      <PageHeader titulo="Análisis por área" crumbs={[{ to: '/', label: 'Panorama' }]}>
+      <PageHeader titulo="Análisis por área" crumbs={[{ to: '/', label: 'Panorama' }]} />
+      <FiltroGlobal conBusqueda={false}>
         {prueba === 'saber11' && (
-          <label className="chip">
-            Área&nbsp;
+          <div className="field field-area">
+            <label htmlFor="fg-area">Área</label>
             <select
+              id="fg-area"
               value={area}
               onChange={(e) => setParams({ area: e.target.value }, { replace: true })}
-              style={{ border: 'none', background: 'none', font: 'inherit' }}
             >
               {AREAS_S11.map((a) => (
                 <option key={a} value={a}>
@@ -55,10 +56,9 @@ export default function AnalisisArea() {
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         )}
-      </PageHeader>
-      <FiltroGlobal conBusqueda={false} />
+      </FiltroGlobal>
 
       <div className="content">
         <PruebaToggle value={prueba} onChange={setPrueba} />

@@ -2,8 +2,10 @@ import { useModelo } from '../../state/store.jsx'
 import { useFiltro } from '../../state/store.jsx'
 import { Seg } from '../ui.jsx'
 
-/** Barra de filtro global — scopea toda la app. */
-export default function FiltroGlobal({ conBusqueda = true }) {
+/** Barra de filtro global — scopea toda la app. `children` permite sumar un
+ * campo propio de la página (p. ej. el selector de Área en Análisis por
+ * área) para que quede en la misma fila que Municipio/Zona/Sector. */
+export default function FiltroGlobal({ conBusqueda = true, children }) {
   const { modelo } = useModelo()
   const { filtro, set, limpiar, activo } = useFiltro()
   if (!modelo) return null
@@ -45,6 +47,7 @@ export default function FiltroGlobal({ conBusqueda = true }) {
           ]}
         />
       </div>
+      {children}
       {conBusqueda && (
         <div className="field grow">
           <label htmlFor="fg-q">Buscar institución</label>
