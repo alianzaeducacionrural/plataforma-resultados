@@ -7,9 +7,12 @@ import { useEffect } from 'react'
 // ---------------- Datos ----------------
 const DatosCtx = createContext(null)
 
+const PROGRESO_INICIAL = { paso: 0, total: 4, mensaje: 'Conectando con el servidor…', fraccion: 0.03 }
+
 export function DatosProvider({ children }) {
   const token = useToken()
   const [estado, setEstado] = useState({ cargando: true, error: null, modelo: null })
+  const [progreso, setProgreso] = useState(PROGRESO_INICIAL)
   const [intento, setIntento] = useState(0)
 
   const reintentar = useCallback(() => {
@@ -24,7 +27,8 @@ export function DatosProvider({ children }) {
     }
     let vivo = true
     setEstado({ cargando: true, error: null, modelo: null })
-    fetchResumen(token)
+    setProgreso(PROGRESO_INICIAL)
+    fetchResumen(token, (p) => vivo && setProgreso(p))
       .then((datos) => vivo && setEstado({ cargando: false, error: null, modelo: buildModel(datos) }))
       .catch((err) => vivo && setEstado({ cargando: false, error: err.message || 'Error', modelo: null }))
     return () => {
@@ -32,7 +36,7 @@ export function DatosProvider({ children }) {
     }
   }, [token, intento])
 
-  const value = useMemo(() => ({ ...estado, reintentar, token }), [estado, reintentar, token])
+  const value = useMemo(() => ({ ...estado, progreso, reintentar, token }), [estado, progreso, reintentar, token])
   return <DatosCtx.Provider value={value}>{children}</DatosCtx.Provider>
 }
 

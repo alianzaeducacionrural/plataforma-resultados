@@ -23,10 +23,10 @@ export default function App() {
 }
 
 function Shell() {
-  const { cargando, error, modelo, reintentar } = useModelo()
+  const { cargando, error, modelo, reintentar, progreso } = useModelo()
 
   if (error === 'sin-token') return <SinToken contexto="la plataforma" />
-  if (cargando) return <Cargando />
+  if (cargando) return <Cargando progreso={progreso} />
   if (error) return <ErrorEstado mensaje={error} onReintentar={reintentar} />
 
   // Con token de institución el backend devuelve una sola → modo institución.

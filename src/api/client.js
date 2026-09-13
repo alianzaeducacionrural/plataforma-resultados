@@ -87,14 +87,36 @@ export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4
   }
 }
 
+// Etapas de fetchResumen, en el orden real en que se piden — usadas por el
+// loader de la pantalla de carga para mostrarle a la persona qué se está
+// trayendo, con lenguaje llano (nada de "vista", "token" ni "caché").
+export const ETAPAS_CARGA = [
+  { etiqueta: 'QSQS', mensaje: 'Cargando los resultados de QSQS…' },
+  { etiqueta: 'Saber 11', mensaje: 'Cargando los resultados de Saber 11…' },
+  { etiqueta: 'Instituciones', mensaje: 'Cargando el catálogo de instituciones…' },
+  { etiqueta: 'Histórico', mensaje: 'Cargando el histórico 2023-2025…' },
+]
+
 /**
  * QSQS + Saber 11 + tablas de referencia (meta) + histórico 2023-2025, en
  * pedidos EN SERIE (más chicos y más fiables que el de 3 MB de `resumen`).
+ *
+ * @param {string} token
+ * @param {(p: {paso: number, total: number, mensaje: string, fraccion: number}) => void} [onProgreso]
+ *   Se llama antes de cada etapa para que la pantalla de carga muestre una
+ *   barra de progreso y el mensaje correspondiente.
  */
-export async function fetchResumen(token) {
+export async function fetchResumen(token, onProgreso) {
+  const total = ETAPAS_CARGA.length
+  const avisar = (paso, mensaje, fraccion) => onProgreso?.({ paso, total, mensaje, fraccion })
+
+  avisar(0, ETAPAS_CARGA[0].mensaje, 0.06)
   const qsqs = await fetchDatos(token, 'qsqs')
+  avisar(1, ETAPAS_CARGA[1].mensaje, 0.3)
   const saber11 = await fetchDatos(token, 'saber11')
+  avisar(2, ETAPAS_CARGA[2].mensaje, 0.55)
   const meta = await fetchDatos(token, 'meta')
+  avisar(3, ETAPAS_CARGA[3].mensaje, 0.75)
   // El histórico es un agregado opcional (no bloquea el resto de la app si el
   // backend todavía no lo tiene desplegado, o si el Sheet fuente no está listo).
   // Un solo intento con un reintento corto — si falla, no vale la pena hacerle
@@ -105,6 +127,7 @@ export async function fetchResumen(token) {
   } catch (err) {
     console.warn('No se pudo cargar el histórico:', err.message)
   }
+  avisar(4, 'Preparando tu panel…', 0.95)
   return {
     qsqs: qsqs.qsqs ?? qsqs,
     saber11: saber11.saber11 ?? saber11,
