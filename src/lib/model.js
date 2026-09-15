@@ -225,6 +225,7 @@ export function buildModel(datos) {
     }
     s11.set(String(r.DANE), {
       periodo: r['Periodo Aplicación'],
+      anio: anioDePeriodo(r['Periodo Aplicación']),
       matriculados: num(r['Matriculados EE']),
       inscritos: num(r['Inscritos EE']),
       presentes: num(r['Presentes EE']),
@@ -362,10 +363,14 @@ export function buildModel(datos) {
     ...new Set(instituciones.map((i) => i.municipio).filter((m) => m && m !== '—')),
   ].sort((a, b) => a.localeCompare(b, 'es'))
 
+  const aniosS11 = instituciones.map((i) => i.s11?.anio).filter((a) => a != null)
+  const anioSaber11 = aniosS11.length ? Math.max(...aniosS11) : null
+
   return {
     instituciones,
     municipios,
     periodo: firstDefined(instituciones.map((i) => i.s11?.periodo)),
+    anioSaber11,
     benchComp,
     historicoRef: { colombia: refColombiaHist, departamento: refDepartamentoHist, zonas: refZonasHist },
     documentos: meta.documentos ?? [],
@@ -608,6 +613,14 @@ function claveAfirm(grado, area, id) {
 }
 function firstDefined(arr) {
   return arr.find((x) => x != null) ?? null
+}
+// "Periodo Aplicación" llega como fecha ISO ("2025-03-01T08:00:00.000Z") —
+// de ahí sacamos solo el año, para poder mostrar "Puntaje 2025" en vez de
+// un genérico "Puntaje Saber 11" que no dice a qué aplicación corresponde.
+function anioDePeriodo(v) {
+  if (!v) return null
+  const m = String(v).match(/^(\d{4})/)
+  return m ? Number(m[1]) : null
 }
 function diacriticos(s) {
   return (String(s).normalize('NFD').match(/[̀-ͯ]/g) || []).length

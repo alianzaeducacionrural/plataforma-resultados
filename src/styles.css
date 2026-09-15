@@ -424,6 +424,12 @@ h3 {
 .grid.cols-3 {
   grid-template-columns: repeat(3, 1fr);
 }
+/* Para listas de tamaño fijo conocido (p. ej. las 5 categorías A+/A/B/C/D del
+   ICFES) — evita el hueco feo que deja .grid.auto cuando el último elemento
+   no completa una fila. */
+.grid.cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
 .grid.auto {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
@@ -937,6 +943,9 @@ table.data tbody tr.clickable {
   .grid.cols-2,
   .grid.cols-3 {
     grid-template-columns: 1fr;
+  }
+  .grid.cols-5 {
+    grid-template-columns: repeat(3, 1fr);
   }
   .bar-row {
     grid-template-columns: 120px 1fr 96px;

@@ -62,10 +62,6 @@ export default function Documentos() {
             </section>
           ))
         )}
-        <p className="faint">
-          Para agregar o actualizar documentos, editá directamente el Sheet "documentos" en la carpeta
-          de Drive del proyecto — no hace falta tocar código.
-        </p>
       </div>
     </>
   )

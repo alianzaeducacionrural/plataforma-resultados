@@ -90,7 +90,7 @@ function HistoricoDepartamento({ modelo, aplicar }) {
                   <h2>Clasificación ICFES — {ultimoAnio}</h2>
                   <span className="muted">{conClasif} instituciones con categoría</span>
                 </div>
-                <div className="grid auto">
+                <div className="grid cols-5">
                   {Object.entries(clasifCounts).map(([cat, n]) => (
                     <div key={cat} className="kpi">
                       <div className="kpi-label">{cat}</div>

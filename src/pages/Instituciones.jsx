@@ -8,11 +8,11 @@ import { fmtNum, pct } from '../lib/format.js'
 import { bandaGlobal } from '../lib/model.js'
 import { exportarCsv, filasInstitucionesCsv } from '../lib/exportar.js'
 
-const COLS_S11 = [
+const colsS11 = (anio) => [
   { key: 'nombre', label: 'Institución' },
   { key: 'municipio', label: 'Municipio' },
   { key: 'zonaSector', label: 'Zona · sector', noSort: true },
-  { key: 'global', label: 'Puntaje Saber 11', num: true },
+  { key: 'global', label: anio ? `Puntaje ${anio}` : 'Puntaje Saber 11', num: true },
   { key: 'banda', label: 'Banda', noSort: true },
   { key: 'clasificacionActual', label: 'Clasificación' },
   { key: 'gapGlobalCol', label: 'vs Colombia', num: true },
@@ -42,7 +42,7 @@ export default function Instituciones() {
   const nav = useNavigate()
   const [prueba, setPrueba] = useState('saber11')
   const [sort, setSort] = useState({ field: 'nombre', dir: 'asc' })
-  const cols = prueba === 'saber11' ? COLS_S11 : COLS_QSQS
+  const cols = prueba === 'saber11' ? colsS11(modelo.anioSaber11) : COLS_QSQS
 
   const filas = useMemo(() => {
     // Cada pestaña muestra solo instituciones con datos de esa prueba —
