@@ -47,10 +47,6 @@ export default function FichaInstitucion() {
       : (s?.ref?.[ref === 'ETC' ? 'ETC' : ref] ?? null)
   const gapGlobal = inst.global != null && refGlobal != null ? inst.global - refGlobal : null
 
-  // puesto en el municipio
-  const ranking = [...pares].sort((a, b) => (b.global ?? -1) - (a.global ?? -1))
-  const puesto = ranking.findIndex((p) => p.dane === inst.dane) + 1
-
   const refArea = (area) => {
     if (ref === 'Municipio') {
       const vals = pares.map((p) => p.areasS11?.find((x) => x.area === area)?.ee).filter((v) => v != null)
@@ -73,11 +69,6 @@ export default function FichaInstitucion() {
       value: gapGlobal != null ? (gapGlobal >= 0 ? '+' : '−') + fmtNum(Math.abs(gapGlobal), 1) : '—',
       unit: 'pts',
       tono: semaforo(gapGlobal, 'global'),
-    },
-    {
-      label: 'Puesto en el municipio',
-      value: puesto ? `${puesto}º` : '—',
-      sub: `de ${pares.length} con Saber 11 en ${inst.municipio}`,
     },
     {
       label: 'Presentaron Saber 11',

@@ -96,7 +96,9 @@ export default function Sidebar({ modo, unica }) {
       <div className="sidebar-foot">
         {modo === 'institucion' && 'Solo ves los datos de tu institución.'}
         <div className="sidebar-credito">
-          CREADO POR EL COMITÉ DE CAFETEROS DE CALDAS - ÁREA DE EDUCACIÓN
+          <div className="sidebar-credito-label">Creado por</div>
+          <div>Comité de Cafeteros de Caldas · Área de Educación</div>
+          <div>SED Caldas · Calidad Educativa</div>
         </div>
       </div>
     </aside>
