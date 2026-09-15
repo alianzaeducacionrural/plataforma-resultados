@@ -40,7 +40,7 @@ export default function Documentos() {
                 <h2>{cat}</h2>
                 <span className="muted">{porCategoria[cat].length}</span>
               </div>
-              <div className="grid auto">
+              <div className="grid cols-2">
                 {porCategoria[cat].map((d, i) => (
                   <a
                     key={i}
