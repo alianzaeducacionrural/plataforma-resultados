@@ -45,7 +45,9 @@ export default function Instituciones() {
   const cols = prueba === 'saber11' ? COLS_S11 : COLS_QSQS
 
   const filas = useMemo(() => {
-    const list = aplicar(modelo.instituciones)
+    // Cada pestaña muestra solo instituciones con datos de esa prueba —
+    // nada de filas con guiones por no tener QSQS (o Saber 11).
+    const list = aplicar(modelo.instituciones).filter((d) => (prueba === 'saber11' ? d.tieneS11 : d.tieneQsqs))
     const dir = sort.dir === 'asc' ? 1 : -1
     const numerico = ['global', 'gapGlobalCol', 'participacionQsqs', 'clasificacionActual', 'gradosEvaluados'].includes(
       sort.field,
@@ -62,7 +64,7 @@ export default function Instituciones() {
       }
       return dir * cmp(a, b, sort.field)
     })
-  }, [modelo, aplicar, sort])
+  }, [modelo, aplicar, sort, prueba])
 
   const toggleSort = (field) =>
     setSort((s) =>
