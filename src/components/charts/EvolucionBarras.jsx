@@ -78,6 +78,26 @@ function TickCambio({ x, y, payload, filas }) {
   )
 }
 
+/** Leyenda: una etiqueta por aplicación (con su color) y qué significan las pastillas de cambio. */
+function Leyenda() {
+  return (
+    <div className="evo-leyenda">
+      <span className="evo-chip">
+        <i style={{ background: COLOR_A1 }} />
+        Aplicación 1
+      </span>
+      <span className="evo-chip">
+        <i style={{ background: COLOR_A2 }} />
+        Aplicación 2
+      </span>
+      <span className="evo-leyenda-sep" />
+      <span className="evo-leyenda-txt">Cambio</span>
+      <span className="evo-mini sube">▲ mejora</span>
+      <span className="evo-mini baja">▼ baja</span>
+    </div>
+  )
+}
+
 // sin espacio antes del %: con "46 %" la etiqueta se parte en dos líneas dentro de la barra angosta
 const fmtPct = (v) => (v == null ? '' : `${Math.round(v * 100)}%`)
 
@@ -115,7 +135,7 @@ export default function EvolucionBarras({ filas, alto = 320 }) {
           formatter={(v) => (v == null ? 's/d' : `${(v * 100).toLocaleString('es-CO', { maximumFractionDigits: 1 })} %`)}
           contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d9dee3' }}
         />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Legend content={<Leyenda />} />
         {[
           { key: 'a1', name: 'Aplicación 1', fill: COLOR_A1 },
           { key: 'a2', name: 'Aplicación 2', fill: COLOR_A2 },

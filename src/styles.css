@@ -1362,3 +1362,56 @@ body {
     font-size: 19px;
   }
 }
+
+/* leyenda de la gráfica de evolución QSQS */
+.evo-leyenda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding-top: 6px;
+}
+.evo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--panel-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.evo-chip i {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.evo-leyenda-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.evo-leyenda-txt {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.evo-mini {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.evo-mini.sube {
+  background: var(--ok-soft);
+  color: var(--ok-ink);
+}
+.evo-mini.baja {
+  background: var(--alert-soft);
+  color: var(--alert-ink);
+}
