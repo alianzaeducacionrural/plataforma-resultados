@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import Creditos from '../Creditos.jsx'
 
 const I = {
   panorama: (
@@ -95,11 +96,7 @@ export default function Sidebar({ modo, unica }) {
 
       <div className="sidebar-foot">
         {modo === 'institucion' && 'Solo ves los datos de tu institución.'}
-        <div className="sidebar-credito">
-          <div className="sidebar-credito-label">Creado por</div>
-          <div>Comité de Cafeteros de Caldas · Área de Educación</div>
-          <div>SED Caldas · Calidad Educativa</div>
-        </div>
+        <Creditos variante="oscura" />
       </div>
     </aside>
   )

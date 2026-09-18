@@ -134,23 +134,69 @@ h3 {
   color: rgba(255, 255, 255, 0.45);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-.sidebar-credito {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.creditos {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.4);
+  gap: 10px;
+  margin-top: 10px;
 }
-.sidebar-credito-label {
+.creditos-label {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
-  margin-bottom: 1px;
+  color: rgba(255, 255, 255, 0.4);
+}
+.creditos-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.creditos-item img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+}
+/* el arte del logo del Comité tiene mucho margen interno en el PNG: se agranda y se recorta
+   con margen negativo para que pese lo mismo que el de la SED */
+.creditos-item.comite img {
+  height: 66px;
+  margin: -10px 0 -10px -22px;
+}
+.creditos-item.sed img {
+  height: 38px;
+}
+.creditos-item span {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+/* versión sobre fondo claro: pie de página en móvil y en el PDF */
+.creditos.clara {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 36px;
+  margin-top: 0;
+}
+.creditos.clara .creditos-label {
+  width: 100%;
+  color: var(--text-faint);
+}
+.creditos.clara .creditos-item span {
+  color: var(--text-dim);
+}
+.creditos-pie {
+  display: none;
+  padding: 18px 28px 26px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+@media (max-width: 760px), print {
+  .creditos-pie {
+    display: block;
+  }
 }
 .sidebar-group {
   font-size: 10px;

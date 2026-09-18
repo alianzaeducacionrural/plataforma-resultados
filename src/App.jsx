@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar.jsx'
+import Creditos from './components/Creditos.jsx'
 import { Cargando, ErrorEstado, SinToken } from './components/Estado.jsx'
 import { DatosProvider, FiltroProvider, useModelo } from './state/store.jsx'
 import Panorama from './pages/Panorama.jsx'
@@ -58,6 +59,10 @@ function Shell() {
             </>
           )}
         </Routes>
+        {/* En pantalla ancha los créditos van en el menú; este pie es para móvil y para el PDF */}
+        <footer className="creditos-pie">
+          <Creditos variante="clara" />
+        </footer>
       </main>
     </div>
   )
