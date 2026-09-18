@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import BarrasComparativas from '../components/charts/BarrasComparativas.jsx'
 import { Delta, PruebaToggle, Semaforo } from '../components/ui.jsx'
+import { CargandoQsqs } from '../components/Estado.jsx'
 import { useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
 import { AREAS_S11, bandaGlobal, competenciasQsqs } from '../lib/model.js'
 import { exportarCsv } from '../lib/exportar.js'
 
 export default function Comparador() {
-  const { modelo } = useModelo()
+  const { modelo, q26Estado } = useModelo()
+  // QSQS 2026 llega en segundo plano: hasta entonces no se arman las filas de competencias
+  const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
   const [prueba, setPrueba] = useState('saber11')
   const [sel, setSel] = useState([])
 
@@ -93,7 +96,7 @@ export default function Comparador() {
       },
     ]
     const claves = new Map()
-    for (const i of elegidas) {
+    for (const i of q26Cargando ? [] : elegidas) {
       for (const c of competenciasQsqs(i)) {
         if (c.ee == null) continue
         const key = c.grado + ' ‖ ' + c.area + ' ‖ ' + c.competencia
@@ -105,14 +108,20 @@ export default function Comparador() {
         k: `${competencia} (${area} · ${grado}°)`,
         get: (i) => {
           const c = competenciasQsqs(i).find((x) => x.grado === grado && x.area === area && x.competencia === competencia)
-          return c?.ee != null ? pct(c.ee) : '—'
+          if (c?.ee == null) return '—'
+          // Aplicación 2 y, entre paréntesis, cuánto cambió respecto de la Aplicación 1 (en puntos)
+          return (
+            <>
+              {pct(c.ee)} {c.delta != null && <Delta valor={c.delta * 100} modo="pts" />}
+            </>
+          )
         },
         raw: (i) => competenciasQsqs(i).find((x) => x.grado === grado && x.area === area && x.competencia === competencia)?.ee,
         num: true,
       })
     }
     return r
-  }, [elegidas])
+  }, [elegidas, q26Cargando])
 
   const filas = prueba === 'saber11' ? filasS11 : filasQsqs
 
@@ -204,6 +213,18 @@ export default function Comparador() {
                 <BarrasComparativas instituciones={elegidas} />
               </section>
             )}
+
+            {prueba === 'qsqs' &&
+              (q26Cargando ? (
+                <CargandoQsqs />
+              ) : (
+                modelo.q26?.disponible && (
+                  <p className="faint" style={{ margin: 0 }}>
+                    Competencias QSQS — Aplicación 2 de 2026; entre paréntesis, el cambio frente a la Aplicación 1 (en
+                    puntos porcentuales).
+                  </p>
+                )
+              ))}
 
             <section className="panel">
               <div className="table-wrap">

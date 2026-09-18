@@ -38,16 +38,18 @@ export default function RutaMejoramiento() {
       for (const c of competenciasQsqs(i)) {
         if (c.ee == null || c.colombia == null) continue
         const k = c.area + ' ‖ ' + c.grado + ' ‖ ' + c.competencia
-        if (!by.has(k)) by.set(k, { ...c, ee: [], col: [] })
+        if (!by.has(k)) by.set(k, { ...c, ee: [], col: [], ee1: [] })
         by.get(k).ee.push(c.ee)
         by.get(k).col.push(c.colombia)
+        if (c.ee1 != null) by.get(k).ee1.push(c.ee1)
       }
     }
     return [...by.values()]
       .map((c) => {
         const ee = media(c.ee)
         const col = media(c.col)
-        return { ...c, ee, col, gap: ee - col }
+        const ee1 = media(c.ee1)
+        return { ...c, ee, col, ee1, cambio: ee1 != null ? ee - ee1 : null, gap: ee - col }
       })
       .filter((c) => c.gap < -0.02)
       .sort((a, b) => a.gap - b.gap)
@@ -113,6 +115,12 @@ export default function RutaMejoramiento() {
                   </div>
                   <div className="muted">
                     % de acierto {pct(c.ee)} vs Colombia {pct(c.col)} <Delta valor={c.gap} modo="pct" />
+                    {c.cambio != null && (
+                      <>
+                        {' '}
+                        · Aplicación 1 → 2: {pct(c.ee1)} → {pct(c.ee)} <Delta valor={c.cambio * 100} modo="pts" /> pts
+                      </>
+                    )}
                   </div>
                 </li>
               ))}

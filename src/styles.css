@@ -1006,3 +1006,106 @@ table.data tbody tr.clickable {
     padding-right: 16px;
   }
 }
+
+/* ============ QSQS 2026: evolución Aplicación 1 → 2 (ficha y análisis) ============ */
+.evo-head,
+.evo-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px 64px 78px 92px 78px;
+  gap: 10px;
+  align-items: center;
+}
+.evo-head {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.evo-head span:not(:first-child),
+.evo-row .evo-num {
+  text-align: right;
+}
+.evo-row {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 12.5px;
+}
+.evo-row .evo-txt {
+  line-height: 1.35;
+}
+.evo-row.evo-comp .evo-txt {
+  font-weight: 700;
+  font-size: 13px;
+}
+.evo-row.evo-af {
+  background: var(--panel-2);
+}
+.evo-row.evo-af .evo-txt {
+  padding-left: 18px;
+}
+.evo-row.evo-ev {
+  background: var(--bg);
+}
+.evo-row.evo-ev .evo-txt {
+  padding-left: 36px;
+  color: var(--text-dim);
+}
+.evo-row .evo-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+details.evo > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details.evo > summary::-webkit-details-marker {
+  display: none;
+}
+details.evo > summary .evo-txt::before {
+  content: '▸';
+  display: inline-block;
+  width: 14px;
+  color: var(--text-faint);
+  transition: transform 0.12s;
+}
+details.evo[open] > summary .evo-txt::before {
+  transform: rotate(90deg);
+}
+.evo-row.evo-hoja .evo-txt::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+}
+.grado-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin: 4px 0 10px;
+}
+.grado-tabs button {
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.grado-tabs button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+@media (max-width: 1000px) {
+  .evo-head,
+  .evo-row {
+    grid-template-columns: minmax(0, 1fr) 54px 54px 66px 84px;
+  }
+  .evo-head span:nth-child(6),
+  .evo-row .evo-ref {
+    display: none;
+  }
+}

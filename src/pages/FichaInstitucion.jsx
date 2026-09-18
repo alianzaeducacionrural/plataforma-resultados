@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import { useInstitucionParam } from '../App.jsx'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import { BarRow, Delta, KpiRow, NivelesBar, PruebaToggle } from '../components/ui.jsx'
-import { ErrorEstado } from '../components/Estado.jsx'
+import { CargandoQsqs, ErrorEstado } from '../components/Estado.jsx'
+import EvolucionQsqs from '../components/EvolucionQsqs.jsx'
+import { useDetalleQsqs26 } from '../hooks/useDetalleQsqs26.js'
 import DotPlotAreas from '../components/charts/DotPlotAreas.jsx'
 import MapaDesempeno from '../components/MapaDesempeno.jsx'
 import { useModelo } from '../state/store.jsx'
@@ -24,10 +26,13 @@ const REFS = ['Municipio', 'ETC', 'Colombia', 'Oficiales rurales', 'Privados']
 
 export default function FichaInstitucion() {
   const inst = useInstitucionParam()
-  const { modelo } = useModelo()
+  const { modelo, q26Estado } = useModelo()
   const [ref, setRef] = useState('Colombia')
   const [areaAbierta, setAreaAbierta] = useState(null)
   const [tab, setTab] = useState('saber11')
+  // QSQS 2026: las competencias vienen con el panel; afirmaciones y evidencias se piden aparte
+  const detalleQ26 = useDetalleQsqs26(inst)
+  const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
 
   const pares = useMemo(
     () => (inst ? modelo.instituciones.filter((i) => i.municipio === inst.municipio && i.tieneS11) : []),
@@ -107,7 +112,11 @@ export default function FichaInstitucion() {
         },
         { label: 'Aplicación', value: q.anio ? `${q.aplicacion}/${q.anio}` : '—', sub: 'aplicación / año' },
         { label: 'Grados evaluados', value: fmtNum(gradosConDato.length), sub: `de ${GRADOS_QSQS.length}` },
-        { label: 'Competencias con dato', value: fmtNum(comps.length), sub: 'afirmaciones agrupadas' },
+        {
+          label: 'Competencias con dato',
+          value: fmtNum(comps.filter((c) => c.ee != null).length),
+          sub: inst.q26 ? `de ${comps.length} · Aplicación 2 de 2026` : 'afirmaciones agrupadas',
+        },
       ]
     : []
 
@@ -297,7 +306,11 @@ export default function FichaInstitucion() {
                 </div>
               )}
 
-              {comps.length > 0 ? (
+              {q26Cargando ? (
+                <CargandoQsqs />
+              ) : inst.q26 ? (
+                <EvolucionQsqs modelo={modelo} refSel={ref} detalle={detalleQ26} />
+              ) : comps.length > 0 ? (
                 Object.entries(compsPorArea).map(([area, list]) => (
                   <div key={area}>
                     <h3 style={{ margin: '10px 0 6px' }}>{area}</h3>

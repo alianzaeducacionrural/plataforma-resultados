@@ -3,12 +3,16 @@ import { Link, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
 import { BarRow, Delta, PruebaToggle } from '../components/ui.jsx'
+import { CargandoQsqs } from '../components/Estado.jsx'
+import EvolucionBarras from '../components/charts/EvolucionBarras.jsx'
 import { useFiltro, useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
 import {
   AREAS_QSQS,
   AREAS_S11,
+  GRADOS_Q26,
   aprendizajesFlojos,
+  competenciasEvolucionQsqs,
   media,
   resumenAreasS11,
   resumenCompetenciasQsqs,
@@ -171,18 +175,34 @@ function AnalisisSaber11({ lista, area }) {
   )
 }
 
+// Referencia estable (un [] nuevo en cada render invalidaría los useMemo).
+const LISTA_VACIA = []
+const AREA_CORTA = { Lenguaje: 'Leng.', Matemáticas: 'Mat.' }
+
 function AnalisisQsqs({ lista }) {
+  const { modelo, q26Estado } = useModelo()
+  // QSQS 2026 entra en segundo plano; mientras llega no se muestran los números de 2025.
+  const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
+  const q26Listo = !!modelo.q26?.disponible
+  const listaRes = q26Cargando ? LISTA_VACIA : lista
   const [area, setArea] = useState('')
+  const [grado, setGrado] = useState('5')
   const conQsqs = lista.filter((d) => d.tieneQsqs)
   const competencias = useMemo(
-    () => resumenCompetenciasQsqs(lista, { area: area || null, limite: 30 }),
-    [lista, area],
+    () => resumenCompetenciasQsqs(listaRes, { area: area || null, limite: 30 }),
+    [listaRes, area],
+  )
+  const paraGrafico = useMemo(
+    () => competenciasEvolucionQsqs(listaRes, { area: area || null, grado }),
+    [listaRes, area, grado],
   )
   const partProm = media(conQsqs.map((d) => d.participacionQsqs).filter((v) => v != null))
   const ordenPorParticipacion = [...conQsqs].sort((a, b) => (a.participacionQsqs ?? 1) - (b.participacionQsqs ?? 1))
+  const columnas = q26Listo ? 9 : 7
 
   return (
     <>
+      {q26Cargando && <CargandoQsqs />}
       {partProm != null && (
         <div className="narrativa">
           Participación promedio en QSQS: <strong>{pct(partProm)}</strong> sobre {conQsqs.length}{' '}
@@ -194,6 +214,30 @@ function AnalisisQsqs({ lista }) {
             </>
           )}
         </div>
+      )}
+
+      {q26Listo && !q26Cargando && (
+        <section className="panel">
+          <div className="panel-head">
+            <h2>Evolución por competencia · Aplicación 1 → 2 (2026)</h2>
+            <span className="muted">% de acierto promedio · barra oscura = Colombia (Aplic. 2)</span>
+          </div>
+          <div className="grado-tabs">
+            {GRADOS_Q26.map((g) => (
+              <button key={g} type="button" className={g === grado ? 'active' : ''} onClick={() => setGrado(g)}>
+                Grado {g}°
+              </button>
+            ))}
+          </div>
+          <EvolucionBarras
+            filas={paraGrafico.map((c) => ({
+              etiqueta: `${AREA_CORTA[c.area] || c.area} · ${c.competencia}`,
+              a1: c.a1,
+              a2: c.a2,
+              refv: c.ref.col2,
+            }))}
+          />
+        </section>
       )}
 
       <section className="panel">
@@ -214,6 +258,7 @@ function AnalisisQsqs({ lista }) {
         <p className="faint" style={{ margin: '0 0 10px' }}>
           % de acierto promedio del conjunto filtrado, comparado con Colombia — acá sí es acierto (al
           revés que los aprendizajes de Saber 11).
+          {q26Listo && ' Aplicación 2 de 2026; "Cambio" = Aplicación 2 menos Aplicación 1, en puntos porcentuales.'}
         </p>
         <div className="table-wrap">
           <table className="data">
@@ -222,7 +267,9 @@ function AnalisisQsqs({ lista }) {
                 <th>Competencia</th>
                 <th>Área</th>
                 <th className="num">Grado</th>
-                <th className="num">% acierto</th>
+                {q26Listo && <th className="num">Aplic. 1</th>}
+                <th className="num">{q26Listo ? 'Aplic. 2' : '% acierto'}</th>
+                {q26Listo && <th className="num">Cambio</th>}
                 <th className="num">Colombia</th>
                 <th className="num">Brecha</th>
                 <th className="num">Instituciones</th>
@@ -234,7 +281,13 @@ function AnalisisQsqs({ lista }) {
                   <td style={{ maxWidth: 360 }}>{c.competencia}</td>
                   <td className="muted">{c.area}</td>
                   <td className="num">{c.grado}°</td>
+                  {q26Listo && <td className="num">{pct(c.a1)}</td>}
                   <td className="num">{pct(c.ee)}</td>
+                  {q26Listo && (
+                    <td className="num">
+                      <Delta valor={c.cambio != null ? c.cambio * 100 : null} modo="pts" />
+                    </td>
+                  )}
                   <td className="num">{pct(c.col)}</td>
                   <td className="num">
                     <Delta valor={c.gap} modo="pct" />
@@ -244,7 +297,7 @@ function AnalisisQsqs({ lista }) {
               ))}
               {!competencias.length && (
                 <tr>
-                  <td colSpan={7} className="muted" style={{ textAlign: 'center', padding: 20 }}>
+                  <td colSpan={columnas} className="muted" style={{ textAlign: 'center', padding: 20 }}>
                     Sin competencias con dato en el filtro actual.
                   </td>
                 </tr>

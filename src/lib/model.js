@@ -13,6 +13,17 @@ import {
   competenciaDeAprendizaje,
   PESO_AREA,
 } from '../data/saber11.js'
+import { arbolQsqs26, competenciasEvolucionQsqs, parseQsqs2026 } from './qsqs2026.js'
+
+export {
+  AREAS_Q26,
+  GRADOS_Q26,
+  RANGOS_QSQS,
+  arbolQsqs26,
+  competenciasEvolucionQsqs,
+  evolucionAreasQsqs,
+  rangoQsqs,
+} from './qsqs2026.js'
 
 // Las 5 áreas de Saber 11, en orden canónico — la fuente única es data/saber11.js;
 // se reexporta acá con este nombre porque el resto de la app ya lo conoce así.
@@ -54,6 +65,8 @@ export function buildModel(datos) {
   const sa = datos?.saber11?.resultados_area ?? []
   const sap = datos?.saber11?.aprendizajes ?? []
   const meta = datos?.meta ?? {}
+  // QSQS 2026 (Aplicación 1 vs 2): llega aparte y en segundo plano — puede no estar todavía.
+  const q26g = parseQsqs2026(datos?.qsqs2026)
 
   // ---------- diccionario QSQS: ID_AFIRMACION -> {area, competencia, texto} ----------
   const dicAfirm = new Map()
@@ -335,6 +348,21 @@ export function buildModel(datos) {
     const anios = hRaw ? [...hRaw.anios].sort() : []
     const historico = hRaw ? { anios, global: hRaw.global, clasificacion: hRaw.clasificacion, areas: hRaw.areas } : null
     const clasificacionActual = anios.length ? hRaw.clasificacion[anios[anios.length - 1]] || null : null
+    const filasQ26 = q26g?.porDane.get(c.dane)
+    let q26 = null
+    if (filasQ26?.length) {
+      const { competencias, sinAplicacion } = arbolQsqs26(
+        q26g,
+        filasQ26.filter((f) => q26g.dic.get(f.id)?.nivel === 'C'),
+      )
+      q26 = {
+        filas: filasQ26,
+        competencias,
+        sinAplicacion,
+        // ya vino el detalle (afirmaciones/evidencias) — pasa con el token de institución
+        tieneDetalle: filasQ26.some((f) => q26g.dic.get(f.id)?.nivel !== 'C'),
+      }
+    }
     return {
       ...c,
       nombre: c.nombre || '(sin nombre)',
@@ -352,6 +380,7 @@ export function buildModel(datos) {
       areasS11,
       s11: s,
       qsqs: q,
+      q26,
       historico,
       clasificacionActual,
       esNormal: normalesSet.has(c.dane),
@@ -371,6 +400,8 @@ export function buildModel(datos) {
     municipios,
     periodo: firstDefined(instituciones.map((i) => i.s11?.periodo)),
     anioSaber11,
+    // referencias/diccionario de QSQS 2026 (compartidos por todas las instituciones)
+    q26: q26g ? { dic: q26g.dic, ref: q26g.ref, compIdsPorGrado: q26g.compIdsPorGrado, disponible: q26g.porDane.size > 0 } : null,
     benchComp,
     historicoRef: { colombia: refColombiaHist, departamento: refDepartamentoHist, zonas: refZonasHist },
     documentos: meta.documentos ?? [],
@@ -461,8 +492,29 @@ export function aprendizajesFlojos(lista, { area = null, limite = 8 } = {}) {
     .slice(0, limite)
 }
 
-/** Competencias QSQS agregadas de una institución (afirmaciones -> competencia). */
+/**
+ * Competencias QSQS de una institución. Si ya llegó QSQS 2026 (Aplicación 1 vs 2), ese es el
+ * resultado vigente y reemplaza al 2025 anterior — `ee` es el % de acierto de la Aplicación 2
+ * y `ee1` el de la Aplicación 1. Sin 2026, cae al armado anterior (afirmaciones -> competencia).
+ */
 export function competenciasQsqs(inst) {
+  const c26 = inst?.q26?.competencias
+  if (c26?.length) {
+    return c26.map((n) => ({
+      id: n.id,
+      grado: n.grado,
+      area: n.area,
+      competencia: n.texto,
+      ee: n.a2,
+      ee1: n.a1,
+      delta: n.delta,
+      rango: n.rango,
+      etc: n.ref.etc2,
+      region: n.ref.reg2,
+      colombia: n.ref.col2,
+      afirmaciones: [],
+    }))
+  }
   const af = inst?.qsqs?.afirmaciones ?? []
   const by = new Map()
   for (const a of af) {
@@ -541,6 +593,13 @@ export function resumenAreasQsqs(lista) {
 
 /** Competencias QSQS agregadas sobre un conjunto de instituciones (ranking departamental). */
 export function resumenCompetenciasQsqs(lista, { area = null, limite = 200 } = {}) {
+  if (lista.some((i) => i.q26)) {
+    return competenciasEvolucionQsqs(lista, { area })
+      .filter((o) => o.gap != null)
+      .map((o) => ({ ...o, ee: o.a2, col: o.ref.col2, n: o.n2 }))
+      .sort((a, b) => a.gap - b.gap)
+      .slice(0, limite)
+  }
   const by = new Map()
   for (const inst of lista) {
     for (const c of competenciasQsqs(inst)) {

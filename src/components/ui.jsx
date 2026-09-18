@@ -1,4 +1,5 @@
 import { fmtNum, pct } from '../lib/format.js'
+import { RANGOS_QSQS } from '../lib/qsqs2026.js'
 
 const LABEL = { ok: 'A nivel o por encima', warn: 'Levemente por debajo', alert: 'Por debajo', na: 'Sin dato' }
 
@@ -26,6 +27,51 @@ export function Delta({ valor, modo = 'pts', digits = 1 }) {
       {signo}
       {abs}
     </span>
+  )
+}
+
+/** Etiqueta del rango de desempeño de QSQS (Muy bajo / Bajo / Medio / Alto). */
+export function RangoTag({ rango }) {
+  if (!rango) return <span className="faint">s/d</span>
+  return (
+    <span className="tag neutral" title={`${rango.nombre}: ${rango.texto}`}>
+      <span className="dot" style={{ background: rango.color }} />
+      {rango.nombre}
+    </span>
+  )
+}
+
+/** Barra apilada con cuántas instituciones cayeron en cada rango de QSQS. `dist`: {nombre: n}. */
+export function BarraRangos({ dist }) {
+  const total = RANGOS_QSQS.reduce((a, r) => a + (dist?.[r.nombre] ?? 0), 0)
+  if (!total) return <span className="faint">s/d</span>
+  const detalle = RANGOS_QSQS.map((r) => `${r.nombre}: ${dist[r.nombre] ?? 0}`).join(' · ')
+  return (
+    <div className="niveles" title={detalle}>
+      {RANGOS_QSQS.map((r) => {
+        const n = dist[r.nombre] ?? 0
+        const w = (n / total) * 100
+        return (
+          <span key={r.nombre} style={{ width: w + '%', background: r.color }}>
+            {w > 7 ? n : ''}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Leyenda de los cuatro rangos de QSQS con su umbral. */
+export function LeyendaRangos() {
+  return (
+    <div className="faint" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8 }}>
+      {RANGOS_QSQS.map((r) => (
+        <span key={r.nombre}>
+          <span className="dot" style={{ background: r.color, marginRight: 5 }} />
+          <strong>{r.nombre}</strong> {r.texto}
+        </span>
+      ))}
+    </div>
   )
 }
 

@@ -61,6 +61,21 @@ export function Cargando({ progreso }) {
   )
 }
 
+/** Aviso en línea mientras llegan (en segundo plano) los resultados de QSQS 2026. */
+export function CargandoQsqs() {
+  return (
+    <section className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div className="spinner" />
+      <div>
+        <strong>Cargando los resultados de QSQS 2026…</strong>
+        <div className="muted">
+          Son muchos datos (competencias, afirmaciones y evidencias); en unos segundos aparecen.
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function ErrorEstado({ mensaje, onReintentar }) {
   return (
     <div className="state">

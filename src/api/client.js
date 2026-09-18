@@ -19,8 +19,12 @@ export class ApiError extends Error {}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-async function pedir(token, vista) {
-  const url = `${API_URL}?token=${encodeURIComponent(token)}&vista=${vista}&_=${Date.now()}`
+async function pedir(token, vista, extra) {
+  const qs = Object.entries(extra || {})
+    .filter(([, v]) => v != null && v !== '')
+    .map(([k, v]) => `&${k}=${encodeURIComponent(v)}`)
+    .join('')
+  const url = `${API_URL}?token=${encodeURIComponent(token)}&vista=${vista}${qs}&_=${Date.now()}`
   let res
   try {
     res = await fetch(url, { redirect: 'follow' })
@@ -45,18 +49,20 @@ async function pedir(token, vista) {
 
 /**
  * @param {string} token
- * @param {'resumen'|'qsqs'|'saber11'|'meta'|'historico'} vista
+ * @param {'resumen'|'qsqs'|'saber11'|'meta'|'historico'|'qsqs2026'} vista
  * @param {number[]} [esperas] Backoff entre reintentos. Default: 5 intentos,
  *   ~25s en total (pensado para el 404 flaky del redirect de Apps Script).
  *   Pasar un esquema más corto para vistas opcionales que no deben demorar
  *   el resto de la carga si fallan (ver `historico` en fetchResumen).
+ * @param {Record<string, string>} [extra] Parámetros adicionales de la URL (p. ej. `nivel`, `dane`
+ *   para `qsqs2026`); forman parte de la clave de caché.
  * @returns {Promise<object>} el objeto `datos` de la respuesta
  */
-export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4000, 7000, 12000]) {
+export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4000, 7000, 12000], extra = null) {
   if (!API_URL) throw new ApiError('Falta VITE_API_URL (revisá el .env.local)')
   if (!token) throw new ApiError('Falta el token')
 
-  const key = token + '|' + vista
+  const key = token + '|' + vista + (extra ? '|' + JSON.stringify(extra) : '')
   if (cache.has(key)) return cache.get(key)
 
   const promise = (async () => {
@@ -64,7 +70,7 @@ export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4
     for (const espera of esperas) {
       if (espera) await sleep(espera)
       try {
-        return await pedir(token, vista)
+        return await pedir(token, vista, extra)
       } catch (err) {
         if (!err.message.startsWith('__reintentable__')) throw err
         falloDeRed = err.message === '__reintentable__:red'
@@ -138,4 +144,15 @@ export async function fetchResumen(token, onProgreso) {
 
 export function limpiarCache() {
   cache.clear()
+}
+
+/**
+ * QSQS 2026 (Aplicación 1 vs 2). Va aparte de `fetchResumen` y se pide en segundo plano:
+ * la pantalla inicial (Saber 11) no lo necesita, y son ~20.000 filas.
+ *  - `{ nivel: 'comp' }`: solo competencias (liviano; agregados del panel, token maestro).
+ *  - `{ nivel: 'detalle', dane }`: afirmaciones + evidencias de UNA institución (ficha).
+ *  - sin parámetros: todo (lo usa el token de institución, que ya viene filtrado a su DANE).
+ */
+export function fetchQsqs2026(token, { nivel, dane } = {}) {
+  return fetchDatos(token, 'qsqs2026', [0, 2000, 5000], { nivel, dane })
 }

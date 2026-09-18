@@ -2,12 +2,17 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
-import { BarRow, KpiRow, PruebaToggle, Semaforo } from '../components/ui.jsx'
+import { BarRow, BarraRangos, KpiRow, LeyendaRangos, PruebaToggle, Semaforo } from '../components/ui.jsx'
+import { CargandoQsqs } from '../components/Estado.jsx'
+import EvolucionBarras from '../components/charts/EvolucionBarras.jsx'
 import DistribucionBandas from '../components/charts/DistribucionBandas.jsx'
 import Heatmap from '../components/Heatmap.jsx'
 import { useFiltro, useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
 import {
+  GRADOS_Q26,
+  competenciasEvolucionQsqs,
+  evolucionAreasQsqs,
   heatmapMunicipioArea,
   heatmapMunicipioAreaQsqs,
   media,
@@ -233,12 +238,24 @@ function PanoramaSaber11({ lista, alcance }) {
   )
 }
 
+// Referencia estable (un [] nuevo en cada render invalidaría los useMemo).
+const LISTA_VACIA = []
+
 function PanoramaQsqs({ lista, alcance }) {
   const nav = useNavigate()
+  const { modelo, q26Estado } = useModelo()
+  // QSQS 2026 entra en segundo plano: mientras llega, los bloques con resultados quedan vacíos
+  // (y se avisa arriba) en vez de mostrar por un instante los números de 2025 y después cambiarlos.
+  const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
+  const q26Listo = !!modelo.q26?.disponible
+  const listaRes = q26Cargando ? LISTA_VACIA : lista
   const conQsqs = lista.filter((d) => d.tieneQsqs)
-  const areas = useMemo(() => resumenAreasQsqs(lista), [lista])
-  const heat = useMemo(() => heatmapMunicipioAreaQsqs(lista), [lista])
-  const focos = useMemo(() => resumenCompetenciasQsqs(lista, { limite: 4 }), [lista])
+  const areas = useMemo(() => resumenAreasQsqs(listaRes), [listaRes])
+  const heat = useMemo(() => heatmapMunicipioAreaQsqs(listaRes), [listaRes])
+  const focos = useMemo(() => resumenCompetenciasQsqs(listaRes, { limite: 4 }), [listaRes])
+  const evo = useMemo(() => evolucionAreasQsqs(listaRes), [listaRes])
+  const [gradoDist, setGradoDist] = useState('5')
+  const distGrado = useMemo(() => competenciasEvolucionQsqs(listaRes, { grado: gradoDist }), [listaRes, gradoDist])
 
   const partProm = promedio(
     conQsqs.filter((d) => d.participacionQsqs != null),
@@ -291,10 +308,14 @@ function PanoramaQsqs({ lista, alcance }) {
         ]}
       />
 
+      {q26Cargando && <CargandoQsqs />}
+
       <section className="panel">
         <div className="panel-head">
           <h2>Desempeño por área — QSQS</h2>
-          <span className="muted">% de acierto promedio vs Colombia</span>
+          <span className="muted">
+            % de acierto promedio vs Colombia · {q26Listo ? 'Aplicación 2 de 2026' : 'Aplicación 2 de 2025'}
+          </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {areas.map((a) => (
@@ -312,6 +333,74 @@ function PanoramaQsqs({ lista, alcance }) {
           {!areas.some((a) => a.conDato) && <p className="muted">Sin datos de QSQS en el filtro actual.</p>}
         </div>
       </section>
+
+      {q26Listo && !q26Cargando && (
+        <>
+          <section className="panel">
+            <div className="panel-head">
+              <h2>Evolución 2026 · Aplicación 1 → Aplicación 2</h2>
+              <span className="muted">% de acierto promedio por grado · barra oscura = Colombia (Aplic. 2)</span>
+            </div>
+            <div className="grid cols-2">
+              {evo.map((a) => (
+                <div key={a.area}>
+                  <h3 style={{ margin: '0 0 4px' }}>{a.area}</h3>
+                  <EvolucionBarras
+                    alto={300}
+                    filas={a.grados.map((g) => ({ etiqueta: `Grado ${g.grado}°`, a1: g.a1, a2: g.a2, refv: g.col2 }))}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="faint">
+              Promedio de las instituciones con resultado en cada aplicación (si una institución no presentó la
+              prueba, no cuenta). Cada barra resume las competencias del área en ese grado.
+            </p>
+          </section>
+
+          <section className="panel">
+            <div className="panel-head">
+              <h2>Instituciones por rango de desempeño</h2>
+              <span className="muted">cuántas instituciones caen en cada rango, por competencia</span>
+            </div>
+            <div className="grado-tabs">
+              {GRADOS_Q26.map((g) => (
+                <button key={g} type="button" className={g === gradoDist ? 'active' : ''} onClick={() => setGradoDist(g)}>
+                  Grado {g}°
+                </button>
+              ))}
+            </div>
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>Competencia</th>
+                    <th style={{ width: '28%' }}>Aplicación 1</th>
+                    <th style={{ width: '28%' }}>Aplicación 2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {distGrado.map((c) => (
+                    <tr key={c.id}>
+                      <td>
+                        <span className="cell-strong">{c.competencia}</span>
+                        <div className="faint">{c.area}</div>
+                      </td>
+                      <td>
+                        <BarraRangos dist={c.dist1} />
+                      </td>
+                      <td>
+                        <BarraRangos dist={c.dist2} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <LeyendaRangos />
+          </section>
+        </>
+      )}
 
       <section className="panel">
         <div className="panel-head">
