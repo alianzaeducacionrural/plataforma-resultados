@@ -1390,3 +1390,108 @@ body {
   border-radius: 4px;
   flex-shrink: 0;
 }
+
+/* Comparador: selector municipio → institución → Agregar, y tarjetas de lo elegido */
+.cmp-selector {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(240px, 1.8fr) auto;
+  gap: 12px;
+  align-items: flex-end;
+}
+.cmp-selector .field select {
+  padding: 11px 12px;
+  font-size: 13.5px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+}
+.cmp-selector .field select:disabled {
+  background: var(--panel-2);
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+.cmp-agregar {
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+.cmp-agregar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.cmp-cuenta {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--primary);
+}
+.cmp-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.cmp-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 10px 11px 14px;
+  border: 1px solid var(--border-soft);
+  border-left: 6px solid var(--c);
+  border-radius: 12px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 10%, #fff), #fff 75%);
+  box-shadow: var(--shadow);
+}
+.cmp-card-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.cmp-card-txt strong {
+  font-size: 13px;
+  line-height: 1.25;
+}
+.cmp-card-txt span {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.cmp-x {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 61, 76, 0.08);
+  color: var(--text-dim);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cmp-x:hover {
+  background: var(--alert-soft);
+  color: var(--alert-ink);
+}
+.cmp-vacio {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: var(--panel-2);
+}
+.cmp-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+@media (max-width: 760px) {
+  .cmp-selector {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,9 @@ import { useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
 import { AREAS_S11, bandaGlobal, competenciasQsqs } from '../lib/model.js'
 import { exportarCsv } from '../lib/exportar.js'
+import { PALETA_INSTITUCIONES as PALETA } from '../lib/paleta.js'
+
+const MAX = 6
 
 export default function Comparador() {
   const { modelo, q26Estado } = useModelo()
@@ -15,17 +18,35 @@ export default function Comparador() {
   const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
   const [prueba, setPrueba] = useState('saber11')
   const [sel, setSel] = useState([])
+  const [mun, setMun] = useState('') // municipio del que se elige la institución
+  const [pick, setPick] = useState('') // institución elegida, todavía sin agregar
 
   const opciones = modelo.instituciones
   const elegidas = sel.map((d) => opciones.find((i) => i.dane === d)).filter(Boolean)
 
-  const agregarMunicipio = (mun) => {
-    const conDato = opciones.filter((i) => i.municipio === mun && (prueba === 'saber11' ? i.tieneS11 : i.tieneQsqs))
-    const danes = [...conDato]
-      .sort((a, b) => (prueba === 'saber11' ? (b.global ?? -1) - (a.global ?? -1) : (b.participacionQsqs ?? -1) - (a.participacionQsqs ?? -1)))
-      .slice(0, 6)
-      .map((i) => i.dane)
-    setSel(danes)
+  // Solo se ofrecen instituciones con datos de la prueba que se está mirando
+  const conDato = useMemo(
+    () => opciones.filter((i) => (prueba === 'saber11' ? i.tieneS11 : i.tieneQsqs)),
+    [opciones, prueba],
+  )
+  const municipios = useMemo(() => {
+    const cuenta = new Map()
+    for (const i of conDato) if (i.municipio && i.municipio !== '—') cuenta.set(i.municipio, (cuenta.get(i.municipio) ?? 0) + 1)
+    return [...cuenta].sort((a, b) => a[0].localeCompare(b[0], 'es'))
+  }, [conDato])
+  const deMunicipio = useMemo(
+    () =>
+      conDato
+        .filter((i) => i.municipio === mun && !sel.includes(i.dane))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
+    [conDato, mun, sel],
+  )
+  const lleno = sel.length >= MAX
+
+  const agregar = () => {
+    if (!pick || lleno || sel.includes(pick)) return
+    setSel([...sel, pick])
+    setPick('') // el municipio se queda, para agregar otra del mismo sitio sin volver a elegirlo
   }
 
   const filasS11 = useMemo(() => {
@@ -152,55 +173,88 @@ export default function Comparador() {
         <PruebaToggle value={prueba} onChange={setPrueba} />
         <section className="panel">
           <div className="panel-head">
-            <h2>Elige instituciones (hasta 6)</h2>
+            <h2>Elige las instituciones a comparar</h2>
+            <span className="cmp-cuenta">
+              {sel.length} de {MAX}
+            </span>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div className="field grow">
-              <label>Agregar institución</label>
+
+          <div className="cmp-selector">
+            <div className="field">
+              <label htmlFor="cmp-mun">1 · Municipio</label>
               <select
-                value=""
+                id="cmp-mun"
+                value={mun}
                 onChange={(e) => {
-                  if (e.target.value && sel.length < 6 && !sel.includes(e.target.value))
-                    setSel([...sel, e.target.value])
+                  setMun(e.target.value)
+                  setPick('')
                 }}
               >
-                <option value="">Seleccionar…</option>
-                {opciones
-                  .filter((i) => !sel.includes(i.dane))
-                  .map((i) => (
-                    <option key={i.dane} value={i.dane}>
-                      {i.nombre} — {i.municipio}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="field">
-              <label>O comparar un municipio completo</label>
-              <select value="" onChange={(e) => e.target.value && agregarMunicipio(e.target.value)}>
-                <option value="">Elegir municipio…</option>
-                {modelo.municipios.map((m) => (
+                <option value="">Elige un municipio…</option>
+                {municipios.map(([m, n]) => (
                   <option key={m} value={m}>
-                    {m}
+                    {m} ({n})
                   </option>
                 ))}
               </select>
             </div>
+            <div className="field">
+              <label htmlFor="cmp-inst">2 · Institución</label>
+              <select id="cmp-inst" value={pick} disabled={!mun || lleno} onChange={(e) => setPick(e.target.value)}>
+                <option value="">
+                  {lleno
+                    ? `Ya elegiste el máximo (${MAX})`
+                    : !mun
+                      ? 'Primero elige el municipio'
+                      : deMunicipio.length
+                        ? 'Selecciona una institución…'
+                        : 'Ya agregaste todas las de este municipio'}
+                </option>
+                {deMunicipio.map((i) => (
+                  <option key={i.dane} value={i.dane}>
+                    {i.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button type="button" className="btn primary cmp-agregar" disabled={!pick || lleno} onClick={agregar}>
+              <span aria-hidden="true">＋</span> Agregar
+            </button>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {elegidas.map((i) => (
-              <span key={i.dane} className="chip on">
-                {i.nombre}
-                <button type="button" onClick={() => setSel(sel.filter((d) => d !== i.dane))}>
-                  ×
+
+          {elegidas.length ? (
+            <>
+              <div className="cmp-lista">
+                {elegidas.map((i, k) => (
+                  <div key={i.dane} className="cmp-card" style={{ '--c': PALETA[k % PALETA.length] }}>
+                    <div className="cmp-card-txt">
+                      <strong>{i.nombre}</strong>
+                      <span>{[i.municipio, i.zona, i.sector].filter(Boolean).join(' · ')}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="cmp-x"
+                      title="Quitar de la comparación"
+                      aria-label={`Quitar ${i.nombre}`}
+                      onClick={() => setSel(sel.filter((d) => d !== i.dane))}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <button type="button" className="btn ghost sm" onClick={() => setSel([])}>
+                  Quitar todas
                 </button>
-              </span>
-            ))}
-            {sel.length > 0 && (
-              <button type="button" className="btn ghost sm" onClick={() => setSel([])}>
-                Limpiar
-              </button>
-            )}
-          </div>
+              </div>
+            </>
+          ) : (
+            <div className="cmp-vacio">
+              Todavía no has agregado instituciones. Elige un municipio, selecciona la institución y pulsa{' '}
+              <strong>Agregar</strong>.
+            </div>
+          )}
         </section>
 
         {elegidas.length >= 2 ? (
@@ -232,9 +286,12 @@ export default function Comparador() {
                   <thead>
                     <tr>
                       <th></th>
-                      {elegidas.map((i) => (
+                      {elegidas.map((i, k) => (
                         <th key={i.dane}>
-                          <Link to={`/instituciones/${i.dane}`}>{i.nombre}</Link>
+                          <span className="cmp-th">
+                            <span className="dot" style={{ background: PALETA[k % PALETA.length] }} />
+                            <Link to={`/instituciones/${i.dane}`}>{i.nombre}</Link>
+                          </span>
                         </th>
                       ))}
                     </tr>
@@ -262,7 +319,7 @@ export default function Comparador() {
             </section>
           </>
         ) : (
-          <p className="muted">Elige al menos 2 instituciones (o un municipio) para comparar.</p>
+          <p className="muted">Agrega al menos 2 instituciones para ver la comparación.</p>
         )}
       </div>
     </>

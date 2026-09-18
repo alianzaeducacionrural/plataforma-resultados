@@ -1,8 +1,8 @@
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AREAS_S11 } from '../../lib/model.js'
 import { AREAS_CORTO as CORTO } from '../../data/saber11.js'
+import { PALETA_INSTITUCIONES as PALETA } from '../../lib/paleta.js'
 
-const PALETA = ['#0f3d4c', '#0aa596', '#f5a300', '#f0552d', '#2e90fa', '#7a5af8']
 
 /** Barras agrupadas: eje X = prueba de Saber 11, una serie por institución, con el valor sobre cada barra. */
 export default function BarrasComparativas({ instituciones }) {
@@ -26,8 +26,16 @@ export default function BarrasComparativas({ instituciones }) {
           contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d9dee3' }}
         />
         <Legend
-          formatter={(value) => instituciones.find((i) => i.dane === value)?.nombre || value}
-          wrapperStyle={{ fontSize: 11 }}
+          content={() => (
+            <div className="evo-leyenda">
+              {instituciones.map((inst, i) => (
+                <span key={inst.dane} className="evo-chip">
+                  <i style={{ background: PALETA[i % PALETA.length] }} />
+                  {inst.nombre}
+                </span>
+              ))}
+            </div>
+          )}
         />
         {instituciones.map((inst, i) => (
           <Bar key={inst.dane} dataKey={inst.dane} fill={PALETA[i % PALETA.length]} radius={[3, 3, 0, 0]} maxBarSize={34}>
