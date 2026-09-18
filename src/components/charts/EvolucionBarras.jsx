@@ -78,7 +78,7 @@ function TickCambio({ x, y, payload, filas }) {
   )
 }
 
-/** Leyenda: una etiqueta por aplicación (con su color) y qué significan las pastillas de cambio. */
+/** Leyenda: una etiqueta por aplicación, con su color. */
 function Leyenda() {
   return (
     <div className="evo-leyenda">
@@ -90,10 +90,6 @@ function Leyenda() {
         <i style={{ background: COLOR_A2 }} />
         Aplicación 2
       </span>
-      <span className="evo-leyenda-sep" />
-      <span className="evo-leyenda-txt">Cambio</span>
-      <span className="evo-mini sube">▲ mejora</span>
-      <span className="evo-mini baja">▼ baja</span>
     </div>
   )
 }
