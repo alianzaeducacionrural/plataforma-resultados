@@ -10,7 +10,6 @@ import AnalisisArea from './pages/AnalisisArea.jsx'
 import Comparador from './pages/Comparador.jsx'
 import RutaMejoramiento from './pages/RutaMejoramiento.jsx'
 import Historico from './pages/Historico.jsx'
-import Datos from './pages/Datos.jsx'
 import Documentos from './pages/Documentos.jsx'
 
 export default function App() {
@@ -53,8 +52,8 @@ function Shell() {
               <Route path="/comparador" element={<Comparador />} />
               <Route path="/ruta" element={<RutaMejoramiento />} />
               <Route path="/historico" element={<Historico />} />
-              <Route path="/datos" element={<Datos />} />
               <Route path="/documentos" element={<Documentos />} />
+              <Route path="/datos" element={<Navigate to="/documentos" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}

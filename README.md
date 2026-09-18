@@ -25,7 +25,7 @@ npm run dev
 | `#/comparador` | Comparar instituciones o municipios | maestro |
 | `#/ruta` | Ruta de mejoramiento | maestro |
 | `#/historico` | Evolución entre aplicaciones | maestro |
-| `#/datos` | Estado de los datos y exportables | maestro |
+| `#/documentos` | Documentos de apoyo, datos cargados y descargas (`#/datos` redirige acá) | maestro |
 
 Con un token de institución (`#/instituciones/:dane?token=XXXX`), la app entra directo a la
 ficha de esa institución y el resto del menú queda oculto.
@@ -44,7 +44,7 @@ src/
   data/saber11.js          catálogo de competencias ICFES + bandas de puntaje
   components/              layout (Sidebar, FiltroGlobal, PageHeader), charts, ui
   pages/                   Panorama, Instituciones, FichaInstitucion, AnalisisArea,
-                           Comparador, RutaMejoramiento, Historico, Datos
+                           Comparador, RutaMejoramiento, Historico, Documentos
 ```
 
 ## Deploy
