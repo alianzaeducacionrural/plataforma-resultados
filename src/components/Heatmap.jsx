@@ -19,9 +19,9 @@ function etiquetaGap(gap) {
   return (r > 0 ? '+' : '−') + Math.abs(r)
 }
 
-export default function Heatmap({ filas, onCelda }) {
+export default function Heatmap({ filas, onCelda, termino = 'prueba', prueba = 'Saber 11' }) {
   const nav = useNavigate()
-  if (!filas.length) return <p className="muted">Sin datos de Saber 11 en el filtro actual.</p>
+  if (!filas.length) return <p className="muted">Sin datos de {prueba} en el filtro actual.</p>
   const areas = filas[0].celdas.map((c) => c.area)
 
   return (
@@ -66,8 +66,8 @@ export default function Heatmap({ filas, onCelda }) {
         </tbody>
       </table>
       <p className="faint" style={{ marginTop: 8 }}>
-        Cada celda: brecha promedio del municipio frente a Colombia, en puntos (0–100 por área). Verde = a
-        nivel o por encima · rojo = por debajo. Click para ver el detalle del área.
+        Cada celda: brecha promedio del municipio frente a Colombia, en puntos (0–100 por {termino}). Verde = a
+        nivel o por encima · rojo = por debajo. Click para ver el detalle {termino === 'prueba' ? 'de la prueba' : 'del área'}.
       </p>
     </div>
   )

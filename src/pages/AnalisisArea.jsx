@@ -40,11 +40,14 @@ export default function AnalisisArea() {
 
   return (
     <>
-      <PageHeader titulo="Análisis por área" crumbs={[{ to: '/', label: 'Panorama' }]} />
+      <PageHeader
+        titulo={prueba === 'saber11' ? 'Análisis por prueba' : 'Análisis por área'}
+        crumbs={[{ to: '/', label: 'Panorama' }]}
+      />
       <FiltroGlobal conBusqueda={false}>
         {prueba === 'saber11' && (
           <div className="field field-area">
-            <label htmlFor="fg-area">Área</label>
+            <label htmlFor="fg-area">Prueba</label>
             <select
               id="fg-area"
               value={area}
@@ -156,7 +159,7 @@ function AnalisisSaber11({ lista, area }) {
               {!flojos.length && (
                 <tr>
                   <td colSpan={5} className="muted" style={{ textAlign: 'center', padding: 20 }}>
-                    Sin aprendizajes con dato para esta área en el filtro actual.
+                    Sin aprendizajes con dato para esta prueba en el filtro actual.
                   </td>
                 </tr>
               )}

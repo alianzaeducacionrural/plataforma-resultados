@@ -104,7 +104,7 @@ function PanoramaSaber11({ lista, alcance }) {
           )}{' '}
           {focos[0]?.gap != null && (
             <>
-              El área con mayor brecha es <strong>{focos[0].area}</strong> (
+              La prueba con mayor brecha es <strong>{focos[0].area}</strong> (
               {fmtNum(focos[0].gap, 1)} pts vs Colombia).
             </>
           )}
@@ -124,7 +124,7 @@ function PanoramaSaber11({ lista, alcance }) {
 
         <section className="panel">
           <div className="panel-head">
-            <h2>Desempeño por área</h2>
+            <h2>Desempeño por prueba</h2>
             <span className="muted">promedio vs Colombia</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -171,7 +171,7 @@ function PanoramaSaber11({ lista, alcance }) {
 
       <section className="panel">
         <div className="panel-head">
-          <h2>Mapa de calor — municipio × área</h2>
+          <h2>Mapa de calor — municipio × prueba</h2>
           <span className="muted">brecha vs Colombia (Saber 11)</span>
         </div>
         <Heatmap filas={heat.filas} />
@@ -193,7 +193,7 @@ function PanoramaSaber11({ lista, alcance }) {
                   <th>Municipio</th>
                   <th className="num">Puntaje global</th>
                   <th className="num">vs Colombia</th>
-                  <th>Áreas por debajo</th>
+                  <th>Pruebas por debajo</th>
                 </tr>
               </thead>
               <tbody>
@@ -215,7 +215,7 @@ function PanoramaSaber11({ lista, alcance }) {
                       </td>
                       <td>
                         {d.areasPrioritarias.length ? (
-                          <Semaforo estado="alert" texto={`${d.areasPrioritarias.length} áreas`} />
+                          <Semaforo estado="alert" texto={`${d.areasPrioritarias.length} ${d.areasPrioritarias.length === 1 ? 'prueba' : 'pruebas'}`} />
                         ) : (
                           <span className="faint">—</span>
                         )}
@@ -341,6 +341,8 @@ function PanoramaQsqs({ lista, alcance }) {
         </div>
         <Heatmap
           filas={heat.filas}
+          termino="área"
+          prueba="QSQS"
           onCelda={(municipio) => nav(`/areas?prueba=qsqs&municipio=${encodeURIComponent(municipio)}`)}
         />
       </section>

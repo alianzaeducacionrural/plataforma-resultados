@@ -71,7 +71,7 @@ export default function RutaMejoramiento() {
       <div className="content">
         <PruebaToggle value={prueba} onChange={setPrueba} />
         <div className="narrativa">
-          Focos ordenados por <strong>impacto</strong> = brecha frente a Colombia × peso del área ×
+          Focos ordenados por <strong>impacto</strong> = brecha frente a Colombia × peso {prueba === 'saber11' ? 'de la prueba' : 'del área'} ×
           alcance. Empezá por arriba.
         </div>
 
@@ -92,7 +92,7 @@ export default function RutaMejoramiento() {
                   </div>
                   <div className="faint">
                     Qué reforzar: prácticas y retroalimentación centradas en este aprendizaje;{' '}
-                    <Link to={`/areas?area=${encodeURIComponent(f.area)}`}>ver el área completa →</Link>
+                    <Link to={`/areas?area=${encodeURIComponent(f.area)}`}>ver la prueba completa →</Link>
                   </div>
                 </li>
               ))}

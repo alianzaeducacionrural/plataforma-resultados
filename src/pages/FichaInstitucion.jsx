@@ -158,7 +158,7 @@ export default function FichaInstitucion() {
           <div className="grid cols-2">
             <section className="panel">
               <div className="panel-head">
-                <h2>Comparación por área</h2>
+                <h2>Comparación por prueba</h2>
                 <span className="muted">vs {REF_LABEL[ref] || ref}</span>
               </div>
               <DotPlotAreas
@@ -203,7 +203,7 @@ export default function FichaInstitucion() {
         {tabEfectivo === 'saber11' && (
         <section className="panel">
           <div className="panel-head">
-            <h2>Saber 11 — detalle por área, grado 11°</h2>
+            <h2>Saber 11 — detalle por prueba, grado 11°</h2>
             <span className="muted">
               barra = institución · marca vertical = {REF_LABEL[ref] || ref}
             </span>
@@ -226,7 +226,7 @@ export default function FichaInstitucion() {
                 <table className="data">
                   <thead>
                     <tr>
-                      <th>Área</th>
+                      <th>Prueba</th>
                       <th className="num">Puntaje</th>
                       <th className="num">vs {REF_LABEL[ref] || ref}</th>
                       <th style={{ width: 220 }}>Niveles de desempeño (1–4)</th>
@@ -420,7 +420,7 @@ function FragmentRow({ abierta, onToggle, area, a, gap, aprs }) {
                   />
                 ))
               ) : (
-                <span className="faint">Sin aprendizajes con dato para esta área.</span>
+                <span className="faint">Sin aprendizajes con dato para esta prueba.</span>
               )}
             </div>
           </td>

@@ -43,7 +43,7 @@ export function filasInstitucionesCsv(instituciones) {
     'Banda',
     'Diferencia vs Colombia (pts)',
     'Participación QSQS (%)',
-    'Áreas por debajo de Colombia',
+    'Pruebas por debajo de Colombia',
   ]
   const filas = instituciones.map((d) => [
     d.dane,

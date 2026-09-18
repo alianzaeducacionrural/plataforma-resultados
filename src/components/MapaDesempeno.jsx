@@ -40,7 +40,9 @@ export default function MapaDesempeno({ instituciones, foco }) {
           <tr>
             <th className="row-h">Institución</th>
             {AREAS_S11.map((a) => (
-              <th key={a}>{CORTO[a]}</th>
+              <th key={a} title={a}>
+                {CORTO[a]}
+              </th>
             ))}
             <th>Global</th>
           </tr>
@@ -102,6 +104,9 @@ export default function MapaDesempeno({ instituciones, foco }) {
           </span>
         ))}
         <span>· color por brecha vs Colombia</span>
+      </div>
+      <div className="faint" style={{ marginTop: 6 }}>
+        <strong>Convenciones:</strong> {AREAS_S11.map((a) => `${CORTO[a]} = ${a}`).join(' · ')} · Global = puntaje global (0–500)
       </div>
     </div>
   )

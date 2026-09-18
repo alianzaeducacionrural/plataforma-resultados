@@ -53,17 +53,17 @@ export function hallazgosInstitucion(inst, pares) {
     }
   }
 
-  // consistencia entre áreas
+  // consistencia entre pruebas
   if (conDato.length === AREAS_S11.length) {
     const gaps = conDato.map((a) => a.gapCol)
     const dispersión = Math.max(...gaps) - Math.min(...gaps)
     out.push({
       icono: dispersión > 15 ? '⚠️' : 'ℹ️',
-      titulo: dispersión > 15 ? 'Desempeño desigual entre áreas' : 'Desempeño parejo entre áreas',
+      titulo: dispersión > 15 ? 'Desempeño desigual entre pruebas' : 'Desempeño parejo entre pruebas',
       texto:
         dispersión > 15
-          ? `La diferencia entre la mejor y la peor área es de ${fmtNum(dispersión, 1)} pts — conviene un plan por área, no uno solo para toda la institución.`
-          : `Las 5 áreas están relativamente parejas (diferencia de ${fmtNum(dispersión, 1)} pts) — el foco puede ser transversal.`,
+          ? `La diferencia entre la mejor y la peor prueba es de ${fmtNum(dispersión, 1)} pts — conviene un plan por prueba, no uno solo para toda la institución.`
+          : `Las 5 pruebas están relativamente parejas (diferencia de ${fmtNum(dispersión, 1)} pts) — el foco puede ser transversal.`,
     })
   }
 

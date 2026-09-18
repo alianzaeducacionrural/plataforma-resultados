@@ -72,7 +72,7 @@ export default function Datos() {
               <div className="foco-title">Consolidado de instituciones (Excel / CSV)</div>
               <div className="muted">
                 DANE, municipio, zona, sector, puntaje global, banda, brecha vs Colombia, participación
-                QSQS y áreas por debajo — de las {fmtNum(modelo.instituciones.length)} instituciones del
+                QSQS y pruebas por debajo — de las {fmtNum(modelo.instituciones.length)} instituciones del
                 catálogo. Un solo archivo con ambas pruebas, pensado para análisis en hoja de cálculo.
               </div>
               <button

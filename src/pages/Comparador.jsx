@@ -199,7 +199,7 @@ export default function Comparador() {
             {prueba === 'saber11' && (
               <section className="panel">
                 <div className="panel-head">
-                  <h2>Puntaje por área</h2>
+                  <h2>Puntaje por prueba</h2>
                 </div>
                 <BarrasComparativas instituciones={elegidas} />
               </section>

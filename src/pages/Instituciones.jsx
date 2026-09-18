@@ -16,7 +16,7 @@ const colsS11 = (anio) => [
   { key: 'banda', label: 'Banda', noSort: true },
   { key: 'clasificacionActual', label: 'Clasificación' },
   { key: 'gapGlobalCol', label: 'vs Colombia', num: true },
-  { key: 'prioritarias', label: 'Áreas por debajo' },
+  { key: 'prioritarias', label: 'Pruebas por debajo' },
 ]
 
 const COLS_QSQS = [
@@ -147,8 +147,8 @@ export default function Instituciones() {
         <p className="faint">
           {prueba === 'saber11' ? (
             <>
-              "vs Colombia" = diferencia del puntaje global frente al promedio nacional. "Áreas por debajo" =
-              áreas de Saber 11 donde la institución está claramente bajo el promedio nacional.{' '}
+              "vs Colombia" = diferencia del puntaje global frente al promedio nacional. "Pruebas por debajo" =
+              pruebas de Saber 11 donde la institución está claramente bajo el promedio nacional.{' '}
             </>
           ) : (
             <>"Participación" = estudiantes que presentaron la prueba sobre los registrados. </>

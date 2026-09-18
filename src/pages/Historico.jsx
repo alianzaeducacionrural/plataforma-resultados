@@ -81,7 +81,7 @@ function HistoricoDepartamento({ modelo, aplicar }) {
                 <h2>Puntaje global — evolución 2023-2025</h2>
                 <span className="muted">promedio del conjunto filtrado vs Caldas y Colombia</span>
               </div>
-              <LineHistorico anios={[2023, 2024, 2025]} series={series} domain={[150, 350]} />
+              <LineHistorico anios={[2023, 2024, 2025]} series={series} />
             </section>
 
             {conClasif > 0 && (
@@ -106,7 +106,7 @@ function HistoricoDepartamento({ modelo, aplicar }) {
 
             <p className="faint">
               Fuente: histórico departamental de Saber 11 (Secretaría de Educación de Caldas). Entrá a
-              la ficha de una institución para ver su propia evolución por área.
+              la ficha de una institución para ver su propia evolución por prueba.
             </p>
           </>
         )}
@@ -167,12 +167,12 @@ function HistoricoInstitucion({ inst, modelo }) {
               <div className="panel-head">
                 <h2>Puntaje global — evolución 2023-2025</h2>
               </div>
-              <LineHistorico anios={anios} series={serieGlobal} domain={[150, 350]} />
+              <LineHistorico anios={anios} series={serieGlobal} />
             </section>
 
             <section className="panel">
               <div className="panel-head">
-                <h2>Por área — evolución 2023-2025</h2>
+                <h2>Por prueba — evolución 2023-2025</h2>
               </div>
               {AREAS_S11.map((area) => {
                 const serieArea = [
@@ -185,7 +185,7 @@ function HistoricoInstitucion({ inst, modelo }) {
                 return (
                   <details key={area} style={{ marginBottom: 8 }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 600, padding: '6px 0' }}>{area}</summary>
-                    <LineHistorico anios={anios} series={serieArea} domain={[20, 80]} />
+                    <LineHistorico anios={anios} series={serieArea} decimales={1} />
                   </details>
                 )
               })}

@@ -1,10 +1,10 @@
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AREAS_S11 } from '../../lib/model.js'
 import { AREAS_CORTO as CORTO } from '../../data/saber11.js'
 
 const PALETA = ['#2b3440', '#1e8a82', '#c99a2e', '#d1653c', '#6a8caf', '#8a6aaf']
 
-/** Barras agrupadas: eje X = área, una serie por institución. */
+/** Barras agrupadas: eje X = prueba de Saber 11, una serie por institución, con el valor sobre cada barra. */
 export default function BarrasComparativas({ instituciones }) {
   const data = AREAS_S11.map((area) => {
     const row = { area: CORTO[area] || area }
@@ -16,8 +16,8 @@ export default function BarrasComparativas({ instituciones }) {
   })
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 8, bottom: 4, left: 0 }}>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data} margin={{ top: 20, right: 8, bottom: 4, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-soft)" />
         <XAxis dataKey="area" tickLine={false} axisLine={{ stroke: '#d9dee3' }} tick={{ fontSize: 11 }} />
         <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={28} />
@@ -30,7 +30,14 @@ export default function BarrasComparativas({ instituciones }) {
           wrapperStyle={{ fontSize: 11 }}
         />
         {instituciones.map((inst, i) => (
-          <Bar key={inst.dane} dataKey={inst.dane} fill={PALETA[i % PALETA.length]} radius={[3, 3, 0, 0]} maxBarSize={28} />
+          <Bar key={inst.dane} dataKey={inst.dane} fill={PALETA[i % PALETA.length]} radius={[3, 3, 0, 0]} maxBarSize={34}>
+            <LabelList
+              dataKey={inst.dane}
+              position="top"
+              formatter={(v) => (v == null ? '' : Math.round(v))}
+              style={{ fontSize: 11, fontWeight: 700, fill: '#20262e' }}
+            />
+          </Bar>
         ))}
       </BarChart>
     </ResponsiveContainer>
