@@ -177,7 +177,6 @@ function AnalisisSaber11({ lista, area }) {
 
 // Referencia estable (un [] nuevo en cada render invalidaría los useMemo).
 const LISTA_VACIA = []
-const AREA_CORTA = { Lenguaje: 'Leng.', Matemáticas: 'Mat.' }
 
 function AnalisisQsqs({ lista }) {
   const { modelo, q26Estado } = useModelo()
@@ -231,7 +230,7 @@ function AnalisisQsqs({ lista }) {
           </div>
           <EvolucionBarras
             filas={paraGrafico.map((c) => ({
-              etiqueta: `${AREA_CORTA[c.area] || c.area} · ${c.competencia}`,
+              etiqueta: `${c.area}\n${c.competencia}`,
               a1: c.a1,
               a2: c.a2,
               refv: c.ref.col2,

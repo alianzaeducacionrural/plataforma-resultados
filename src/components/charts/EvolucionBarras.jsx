@@ -4,11 +4,17 @@ const COLOR_A1 = '#ffc233'
 const COLOR_A2 = '#0aa596'
 const COLOR_REF = '#0f3d4c'
 
-/** Parte una etiqueta larga en varias líneas (~22 caracteres) para el eje X. */
+/**
+ * Etiqueta del eje X. Si trae un salto de línea, lo de antes es el encabezado (en negrita, p. ej. el
+ * nombre de la prueba) y lo de después es el detalle (p. ej. la competencia), que se parte en varias
+ * líneas (~22 caracteres).
+ */
 function TickMultilinea({ x, y, payload }) {
+  const [cabecera, ...resto] = String(payload.value).split('\n')
+  const detalle = resto.join(' ')
   const lineas = []
   let actual = ''
-  for (const palabra of String(payload.value).split(' ')) {
+  for (const palabra of (detalle || cabecera).split(' ')) {
     if ((actual + ' ' + palabra).trim().length > 22) {
       lineas.push(actual)
       actual = palabra
@@ -17,10 +23,16 @@ function TickMultilinea({ x, y, payload }) {
     }
   }
   if (actual) lineas.push(actual)
+  const conCabecera = detalle !== ''
   return (
     <g transform={`translate(${x},${y})`}>
+      {conCabecera && (
+        <text x={0} y={0} dy={14} textAnchor="middle" fontSize={11.5} fontWeight={700} fill="#0f3d4c">
+          {cabecera}
+        </text>
+      )}
       {lineas.map((l, i) => (
-        <text key={i} x={0} y={0} dy={14 + i * 13} textAnchor="middle" fontSize={11} fill="#626b75">
+        <text key={i} x={0} y={0} dy={14 + (i + (conCabecera ? 1 : 0)) * 13} textAnchor="middle" fontSize={11} fill="#626b75">
           {l}
         </text>
       ))}
@@ -48,7 +60,7 @@ export default function EvolucionBarras({ filas, etiquetaRef = 'Colombia', alto 
           tickLine={false}
           axisLine={{ stroke: '#d9dee3' }}
           tick={<TickMultilinea />}
-          height={64}
+          height={92}
         />
         <YAxis
           domain={[0, 1]}
@@ -59,6 +71,7 @@ export default function EvolucionBarras({ filas, etiquetaRef = 'Colombia', alto 
           width={28}
         />
         <Tooltip
+          labelFormatter={(l) => String(l).replace('\n', ' · ')}
           formatter={(v) => (v == null ? 's/d' : `${(v * 100).toLocaleString('es-CO', { maximumFractionDigits: 1 })} %`)}
           contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d9dee3' }}
         />

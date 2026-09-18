@@ -4,7 +4,6 @@ import { Delta, LeyendaRangos, RangoTag } from './ui.jsx'
 import { pct } from '../lib/format.js'
 import { AREAS_Q26, GRADOS_Q26, arbolQsqs26 } from '../lib/model.js'
 
-const AREA_CORTA = { Lenguaje: 'Leng.', Matemáticas: 'Mat.' }
 const CLASE_NIVEL = { C: 'evo-comp', A: 'evo-af', E: 'evo-ev' }
 
 const celda = (v) => (v == null ? <span className="faint">s/d</span> : pct(v))
@@ -92,7 +91,7 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
 
       <EvolucionBarras
         filas={comps.map((c) => ({
-          etiqueta: `${AREA_CORTA[c.area] || c.area} · ${c.texto}`,
+          etiqueta: `${c.area}\n${c.texto}`,
           a1: c.a1,
           a2: c.a2,
           refv: c.ref?.[refKey + '2'] ?? null,
