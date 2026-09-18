@@ -20,7 +20,7 @@ export default function Creditos({ variante = 'oscura' }) {
       </div>
       <div className="creditos-item sed">
         <img src={clara ? sedColor : sedBlanco} alt="Gobierno de Caldas — Secretaría de Educación" />
-        <span>Calidad Educativa</span>
+        <span>Unidad de Calidad</span>
       </div>
     </div>
   )

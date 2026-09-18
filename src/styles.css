@@ -177,7 +177,7 @@ h3 {
 .creditos-item.sed img {
   height: 38px;
 }
-/* la dependencia de cada entidad (Área de Educación / Calidad Educativa) va destacada, con una
+/* la dependencia de cada entidad (Área de Educación / Unidad de Calidad) va destacada, con una
    marca dorada al lado, para que se lea de un vistazo quién está detrás de la plataforma */
 .creditos-item span {
   display: flex;
