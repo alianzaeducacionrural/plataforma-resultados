@@ -11,6 +11,7 @@ import {
   BANDAS_GLOBAL,
   bandaGlobal,
   competenciaDeAprendizaje,
+  INGLES_ESQUEMA_ANTERIOR,
   PESO_AREA,
 } from '../data/saber11.js'
 import { arbolQsqs26, competenciasEvolucionQsqs, parseQsqs2026 } from './qsqs2026.js'
@@ -263,7 +264,7 @@ export function buildModel(datos) {
       area: r['Área'],
       ee: num(r['Promedio EE']),
       desv: num(r['Desviación EE']),
-      niveles: [1, 2, 3, 4].map((n) => frac(r[`% Nivel ${n} EE`])),
+      niveles: nivelesCompletos(r['Área'], o.anio, [1, 2, 3, 4].map((n) => frac(r[`% Nivel ${n} EE`]))),
       ref,
     })
   }
@@ -669,6 +670,16 @@ export function heatmapMunicipioArea(lista) {
 // ---------- helpers ----------
 function claveAfirm(grado, area, id) {
   return fold(String(grado) + '|' + String(area) + '|' + String(id))
+}
+/**
+ * Hasta 2025 Inglés tiene 5 niveles (A-, A1, A2, B1, B+) y la fuente migrada solo trae 4
+ * columnas: B+ es lo que falta para llegar a 100 % (se tolera el redondeo del ICFES).
+ * Sin datos (todo en 0, p. ej. "N.D.") no se inventa nada.
+ */
+function nivelesCompletos(area, anio, niv4) {
+  if (area !== 'Inglés' || !INGLES_ESQUEMA_ANTERIOR(anio)) return niv4
+  const suma = niv4.reduce((a, v) => a + (v ?? 0), 0)
+  return [...niv4, suma > 0 ? Math.max(0, 1 - suma) : 0]
 }
 function firstDefined(arr) {
   return arr.find((x) => x != null) ?? null

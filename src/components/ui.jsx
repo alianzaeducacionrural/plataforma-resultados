@@ -1,5 +1,6 @@
 import { fmtNum, pct } from '../lib/format.js'
 import { RANGOS_QSQS } from '../lib/qsqs2026.js'
+import { nivelesDePrueba } from '../data/saber11.js'
 
 const LABEL = { ok: 'A nivel o por encima', warn: 'Levemente por debajo', alert: 'Por debajo', na: 'Sin dato' }
 
@@ -75,20 +76,82 @@ export function LeyendaRangos() {
   )
 }
 
-/** Barra 1..4 de niveles de desempeño (array de fracciones 0..1). */
-export function NivelesBar({ niveles }) {
+/**
+ * Barra de niveles de desempeño ICFES de una prueba de Saber 11 (fracciones 0..1). Los colores
+ * son los oficiales del ICFES y el rango de puntaje de cada nivel depende de la prueba y del
+ * año (ver nivelesDePrueba).
+ */
+export function NivelesBar({ niveles, area, anio }) {
+  const cfg = nivelesDePrueba(area, anio)
   const vals = (niveles || []).map((v) => (v == null ? 0 : v))
   const total = vals.reduce((a, b) => a + b, 0) || 1
   return (
-    <div className="niveles" title="Distribución por nivel de desempeño (1 a 4)">
+    <div className="niveles" title="Distribución de estudiantes por nivel de desempeño (pasá el cursor por cada tramo)">
       {vals.map((v, i) => {
+        const c = cfg[i] || {}
         const w = (v / total) * 100
         return (
-          <span key={i} className={'niv-' + (i + 1)} style={{ width: w + '%' }}>
+          <span
+            key={i}
+            title={`${c.etiqueta || 'Nivel ' + (i + 1)}${c.desde != null ? ` (${c.desde}–${c.hasta} pts)` : ''}: ${Math.round(v * 100)} %`}
+            style={{ width: w + '%', background: c.fondo, color: c.texto }}
+          >
             {w > 9 ? Math.round(v * 100) + '%' : ''}
           </span>
         )
       })}
+    </div>
+  )
+}
+
+/** Rangos de puntaje de cada nivel, por prueba (son distintos en cada una). */
+export function LeyendaNiveles({ anio }) {
+  const pruebas = ['Lectura Crítica', 'Matemáticas', 'Sociales y Ciudadanas', 'Ciencias Naturales', 'Inglés']
+  const cols = Math.max(...pruebas.map((p) => nivelesDePrueba(p, anio).length))
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div className="faint" style={{ fontWeight: 700, marginBottom: 4 }}>
+        Niveles de desempeño ICFES — rango de puntaje (0–100) de cada nivel, por prueba
+      </div>
+      <div className="table-wrap">
+        <table className="data">
+          <thead>
+            <tr>
+              <th>Prueba</th>
+              {Array.from({ length: cols }, (_, i) => (
+                <th key={i}>Nivel {i + 1}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {pruebas.map((p) => {
+              const ns = nivelesDePrueba(p, anio)
+              return (
+                <tr key={p}>
+                  <td className="cell-strong">{p}</td>
+                  {Array.from({ length: cols }, (_, i) => {
+                    const n = ns[i]
+                    return (
+                      <td key={i}>
+                        {n && (
+                          <span className="nivel-chip" style={{ background: n.fondo, color: n.texto }}>
+                            {n.etiqueta.startsWith('Nivel') ? '' : n.etiqueta + ' · '}
+                            {n.desde}–{n.hasta}
+                          </span>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="faint" style={{ margin: '4px 0 0' }}>
+        Inglés hasta 2025 se reporta en 5 niveles (A-, A1, A2, B1, B+); desde 2026 en 4 (Pre A1, A1, A2, B1). El
+        nivel B+ se calcula como el resto hasta 100 % porque la fuente migrada no lo trae.
+      </p>
     </div>
   )
 }

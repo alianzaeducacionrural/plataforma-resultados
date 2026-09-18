@@ -713,17 +713,14 @@ table.data tbody tr.clickable {
   color: #fff;
   min-width: 0;
 }
-.niv-1 {
-  background: #d1653c;
-}
-.niv-2 {
-  background: #d99a4e;
-}
-.niv-3 {
-  background: #6a9c96;
-}
-.niv-4 {
-  background: #1e8a82;
+/* colores de los niveles: oficiales del ICFES, se aplican en línea desde data/saber11.js */
+.nivel-chip {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* ============ detalle expandible ============ */

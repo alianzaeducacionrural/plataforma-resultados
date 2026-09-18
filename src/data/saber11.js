@@ -104,3 +104,66 @@ export function bandaGlobal(puntaje) {
   if (puntaje == null) return null
   return BANDAS_GLOBAL.find((b) => puntaje >= b.min && puntaje < b.max) || BANDAS_GLOBAL[BANDAS_GLOBAL.length - 1]
 }
+
+// ---------------------------------------------------------------------
+// Niveles de desempeño de Saber 11 (ICFES — piezas "Niveles de desempeño" de cada prueba).
+// Los CORTES de puntaje (0-100) son distintos en cada prueba; los COLORES son los mismos en
+// todas y salen de la escalera oficial del ICFES: 1 rojo, 2 naranja, 3 amarillo, 4 verde.
+const ROJO = { fondo: '#f41e26', texto: '#ffffff' }
+const NARANJA = { fondo: '#ff9b00', texto: '#20262e' }
+const AMARILLO = { fondo: '#ffd500', texto: '#20262e' }
+const VERDE = { fondo: '#00af43', texto: '#ffffff' }
+// Inglés hasta 2025 tiene 5 niveles; el ICFES no publica un quinto color en estas piezas, así
+// que B1 va en un verde intermedio y B+ en el verde oficial (decisión de diseño nuestra).
+const VERDE_CLARO = { fondo: '#8cc63f', texto: '#20262e' }
+
+const nivel = (etiqueta, desde, hasta, color) => ({ etiqueta, desde, hasta, ...color })
+
+const NIVELES_POR_PRUEBA = {
+  'Lectura Crítica': [
+    nivel('Nivel 1', 0, 35, ROJO),
+    nivel('Nivel 2', 36, 50, NARANJA),
+    nivel('Nivel 3', 51, 65, AMARILLO),
+    nivel('Nivel 4', 66, 100, VERDE),
+  ],
+  Matemáticas: [
+    nivel('Nivel 1', 0, 35, ROJO),
+    nivel('Nivel 2', 36, 50, NARANJA),
+    nivel('Nivel 3', 51, 70, AMARILLO),
+    nivel('Nivel 4', 71, 100, VERDE),
+  ],
+  'Sociales y Ciudadanas': [
+    nivel('Nivel 1', 0, 40, ROJO),
+    nivel('Nivel 2', 41, 55, NARANJA),
+    nivel('Nivel 3', 56, 70, AMARILLO),
+    nivel('Nivel 4', 71, 100, VERDE),
+  ],
+  'Ciencias Naturales': [
+    nivel('Nivel 1', 0, 40, ROJO),
+    nivel('Nivel 2', 41, 55, NARANJA),
+    nivel('Nivel 3', 56, 70, AMARILLO),
+    nivel('Nivel 4', 71, 100, VERDE),
+  ],
+}
+const INGLES_HASTA_2025 = [
+  nivel('A-', 0, 47, ROJO),
+  nivel('A1', 48, 57, NARANJA),
+  nivel('A2', 58, 67, AMARILLO),
+  nivel('B1', 68, 78, VERDE_CLARO),
+  nivel('B+', 79, 100, VERDE),
+]
+const INGLES_DESDE_2026 = [
+  nivel('Pre A1', 0, 36, ROJO),
+  nivel('A1', 37, 57, NARANJA),
+  nivel('A2', 58, 70, AMARILLO),
+  nivel('B1', 71, 100, VERDE),
+]
+
+/** Esquema de Inglés que rige para el año de la aplicación (cambió en 2026). */
+export const INGLES_ESQUEMA_ANTERIOR = (anio) => !(anio != null && anio >= 2026)
+
+/** Niveles ([{etiqueta, desde, hasta, fondo, texto}]) de una prueba de Saber 11 en un año. */
+export function nivelesDePrueba(area, anio) {
+  if (area === 'Inglés') return INGLES_ESQUEMA_ANTERIOR(anio) ? INGLES_HASTA_2025 : INGLES_DESDE_2026
+  return NIVELES_POR_PRUEBA[area] || []
+}

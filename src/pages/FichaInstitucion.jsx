@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useInstitucionParam } from '../App.jsx'
 import PageHeader from '../components/layout/PageHeader.jsx'
-import { BarRow, Delta, KpiRow, NivelesBar, PruebaToggle } from '../components/ui.jsx'
+import { BarRow, Delta, KpiRow, LeyendaNiveles, NivelesBar, PruebaToggle } from '../components/ui.jsx'
 import { CargandoQsqs, ErrorEstado } from '../components/Estado.jsx'
 import EvolucionQsqs from '../components/EvolucionQsqs.jsx'
 import { useDetalleQsqs26 } from '../hooks/useDetalleQsqs26.js'
@@ -238,7 +238,7 @@ export default function FichaInstitucion() {
                       <th>Prueba</th>
                       <th className="num">Puntaje</th>
                       <th className="num">vs {REF_LABEL[ref] || ref}</th>
-                      <th style={{ width: 220 }}>Niveles de desempeño (1–4)</th>
+                      <th style={{ width: 240 }}>Niveles de desempeño</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -262,6 +262,7 @@ export default function FichaInstitucion() {
                           abierta={abierta}
                           onToggle={() => setAreaAbierta(abierta ? null : area)}
                           area={area}
+                          anio={s.anio}
                           a={a}
                           gap={gap}
                           aprs={aprs}
@@ -271,6 +272,7 @@ export default function FichaInstitucion() {
                   </tbody>
                 </table>
               </div>
+              <LeyendaNiveles anio={s.anio} />
             </>
           )}
         </section>
@@ -395,7 +397,7 @@ export default function FichaInstitucion() {
   )
 }
 
-function FragmentRow({ abierta, onToggle, area, a, gap, aprs }) {
+function FragmentRow({ abierta, onToggle, area, anio, a, gap, aprs }) {
   return (
     <>
       <tr className="clickable" onClick={onToggle}>
@@ -405,7 +407,7 @@ function FragmentRow({ abierta, onToggle, area, a, gap, aprs }) {
           {gap != null ? <Delta valor={gap} modo="pts" /> : '—'}
         </td>
         <td>
-          <NivelesBar niveles={a.niveles} />
+          <NivelesBar niveles={a.niveles} area={area} anio={anio} />
         </td>
         <td className="num">
           <span className="faint">{abierta ? '▲' : '▼'}</span>
