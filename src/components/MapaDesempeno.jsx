@@ -5,11 +5,11 @@ import { AREAS_SIGLA as CORTO } from '../data/saber11.js'
 
 // Bandas de desempeño por brecha vs Colombia (puntos, escala 0–100).
 const BANDAS = [
-  { nombre: 'Muy bajo', min: -Infinity, max: -12, bg: '#d1653c' },
-  { nombre: 'Bajo', min: -12, max: -5, bg: '#d98f4a' },
-  { nombre: 'Medio', min: -5, max: 5, bg: '#d9c14e' },
-  { nombre: 'Alto', min: 5, max: 12, bg: '#6a9c96' },
-  { nombre: 'Muy alto', min: 12, max: Infinity, bg: '#1e8a82' },
+  { nombre: 'Muy bajo', min: -Infinity, max: -12, bg: '#f0552d' },
+  { nombre: 'Bajo', min: -12, max: -5, bg: '#ff8a3d' },
+  { nombre: 'Medio', min: -5, max: 5, bg: '#ffc233', oscuro: true },
+  { nombre: 'Alto', min: 5, max: 12, bg: '#5cc48a', oscuro: true },
+  { nombre: 'Muy alto', min: 12, max: Infinity, bg: '#12a05c' },
 ]
 function banda(gap) {
   if (gap == null) return null
@@ -73,7 +73,7 @@ export default function MapaDesempeno({ instituciones, foco }) {
                     <td
                       key={c.area}
                       className={b ? '' : 'empty'}
-                      style={b ? { background: b.bg } : undefined}
+                      style={b ? { background: b.bg, color: b.oscuro ? '#16262e' : undefined } : undefined}
                       title={c.ee != null ? `${c.area}: ${fmtNum(c.ee, 1)} (${b?.nombre})` : 'Sin dato'}
                     >
                       {c.ee != null ? fmtNum(c.ee, 0) : '·'}

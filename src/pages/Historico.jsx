@@ -16,6 +16,8 @@ import {
   historicoGlobalPromedio,
 } from '../lib/model.js'
 
+// color de cada categoría de clasificación de planteles (de mejor a peor)
+const COLOR_CATEGORIA = { 'A+': '#12a05c', A: '#4cc38a', B: '#ffc233', C: '#ff8a3d', D: '#f0552d' }
 const COLOR_CLASIF = { 'A+': 'ok', A: 'ok', B: 'ok', C: 'warn', D: 'alert' }
 
 export default function Historico() {
@@ -58,11 +60,11 @@ function HistoricoDepartamento({ modelo, aplicar, prueba, setPrueba }) {
     {
       key: 'prom',
       label: 'Promedio (filtro actual)',
-      color: '#1e8a82',
+      color: '#0aa596',
       data: Object.fromEntries(agregados.map((a) => [a.anio, a.prom != null ? Math.round(a.prom) : null])),
     },
-    { key: 'dep', label: 'Caldas', color: '#c99a2e', dashed: true, data: refDep },
-    { key: 'col', label: 'Colombia', color: '#2b3440', dashed: true, data: refCol },
+    { key: 'dep', label: 'Caldas', color: '#f5a300', dashed: true, data: refDep },
+    { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: refCol },
   ]
 
   // distribución de clasificación en el año más reciente disponible
@@ -108,7 +110,7 @@ function HistoricoDepartamento({ modelo, aplicar, prueba, setPrueba }) {
                 </div>
                 <div className="grid cols-5">
                   {Object.entries(clasifCounts).map(([cat, n]) => (
-                    <div key={cat} className="kpi">
+                    <div key={cat} className="kpi cat" style={{ '--k': COLOR_CATEGORIA[cat] }}>
                       <div className="kpi-label">{cat}</div>
                       <div className="kpi-value">{fmtNum(n)}</div>
                       <div className="kpi-sub">
@@ -121,7 +123,7 @@ function HistoricoDepartamento({ modelo, aplicar, prueba, setPrueba }) {
             )}
 
             <p className="faint">
-              Fuente: histórico departamental de Saber 11 (Secretaría de Educación de Caldas). Entrá a
+              Fuente: histórico departamental de Saber 11 (Secretaría de Educación de Caldas). Entra a
               la ficha de una institución para ver su propia evolución por prueba.
             </p>
           </>
@@ -138,9 +140,9 @@ function HistoricoInstitucion({ inst, modelo, prueba, setPrueba }) {
   const refDep = modelo.historicoRef?.departamento || {}
 
   const serieGlobal = [
-    { key: 'inst', label: inst.nombre, color: '#1e8a82', data: h?.global || {} },
-    { key: 'dep', label: 'Caldas', color: '#c99a2e', dashed: true, data: refDep.Global || {} },
-    { key: 'col', label: 'Colombia', color: '#2b3440', dashed: true, data: refCol.Global || {} },
+    { key: 'inst', label: inst.nombre, color: '#0aa596', data: h?.global || {} },
+    { key: 'dep', label: 'Caldas', color: '#f5a300', dashed: true, data: refDep.Global || {} },
+    { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: refCol.Global || {} },
   ]
 
   return (
@@ -192,9 +194,9 @@ function HistoricoInstitucion({ inst, modelo, prueba, setPrueba }) {
               </div>
               {AREAS_S11.map((area) => {
                 const serieArea = [
-                  { key: 'inst', label: inst.nombre, color: '#1e8a82', data: h.areas[area] || {} },
-                  { key: 'dep', label: 'Caldas', color: '#c99a2e', dashed: true, data: refDep[area] || {} },
-                  { key: 'col', label: 'Colombia', color: '#2b3440', dashed: true, data: refCol[area] || {} },
+                  { key: 'inst', label: inst.nombre, color: '#0aa596', data: h.areas[area] || {} },
+                  { key: 'dep', label: 'Caldas', color: '#f5a300', dashed: true, data: refDep[area] || {} },
+                  { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: refCol[area] || {} },
                 ]
                 const tieneDato = Object.keys(h.areas[area] || {}).length > 0
                 if (!tieneDato) return null
@@ -297,9 +299,9 @@ function QsqsDepartamento({ lista, grado }) {
             const g = evo.find((a) => a.area === area)?.grados.find((x) => x.grado === grado)
             if (!g || (g.a1 == null && g.a2 == null)) return null
             const series = [
-              { key: 'prom', label: 'Promedio (filtro actual)', color: '#1e8a82', data: { [APLICACIONES[0]]: puntos(g.a1), [APLICACIONES[1]]: puntos(g.a2) } },
-              { key: 'etc', label: 'Caldas', color: '#c99a2e', dashed: true, data: { [APLICACIONES[0]]: puntos(g.etc1), [APLICACIONES[1]]: puntos(g.etc2) } },
-              { key: 'col', label: 'Colombia', color: '#2b3440', dashed: true, data: { [APLICACIONES[0]]: puntos(g.col1), [APLICACIONES[1]]: puntos(g.col2) } },
+              { key: 'prom', label: 'Promedio (filtro actual)', color: '#0aa596', data: { [APLICACIONES[0]]: puntos(g.a1), [APLICACIONES[1]]: puntos(g.a2) } },
+              { key: 'etc', label: 'Caldas', color: '#f5a300', dashed: true, data: { [APLICACIONES[0]]: puntos(g.etc1), [APLICACIONES[1]]: puntos(g.etc2) } },
+              { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: { [APLICACIONES[0]]: puntos(g.col1), [APLICACIONES[1]]: puntos(g.col2) } },
             ]
             return (
               <div key={area}>
@@ -394,9 +396,9 @@ function QsqsInstitucion({ inst, grado }) {
       <div className="grid cols-2">
         {comps.map((c) => {
           const series = [
-            { key: 'inst', label: inst.nombre, color: '#1e8a82', data: { [APLICACIONES[0]]: puntos(c.a1), [APLICACIONES[1]]: puntos(c.a2) } },
-            { key: 'etc', label: 'Caldas', color: '#c99a2e', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref.etc1), [APLICACIONES[1]]: puntos(c.ref.etc2) } },
-            { key: 'col', label: 'Colombia', color: '#2b3440', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref.col1), [APLICACIONES[1]]: puntos(c.ref.col2) } },
+            { key: 'inst', label: inst.nombre, color: '#0aa596', data: { [APLICACIONES[0]]: puntos(c.a1), [APLICACIONES[1]]: puntos(c.a2) } },
+            { key: 'etc', label: 'Caldas', color: '#f5a300', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref.etc1), [APLICACIONES[1]]: puntos(c.ref.etc2) } },
+            { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref.col1), [APLICACIONES[1]]: puntos(c.ref.col2) } },
           ]
           return (
             <div key={c.id}>

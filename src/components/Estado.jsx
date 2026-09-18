@@ -32,7 +32,7 @@ export function Cargando({ progreso }) {
       <div className="loader-card">
         <div className="loader-badge">
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 2l8 3v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3z" fill="#1E8A82" />
+            <path d="M12 2l8 3v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3z" fill="#12c2a8" />
             <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
@@ -95,7 +95,7 @@ export function SinToken({ contexto = 'este panel' }) {
     <div className="state">
       <h1>Falta el enlace de acceso</h1>
       <p>
-        Para ver {contexto} necesitás abrirlo con el enlace que incluye el token
+        Para ver {contexto} necesitas abrirlo con el enlace que incluye el token
         (<code>?token=…</code>).
       </p>
     </div>

@@ -6,12 +6,15 @@ import { AREAS_CORTO as CORTO } from '../data/saber11.js'
 function color(gap) {
   if (gap == null) return null
   const g = Math.max(-18, Math.min(6, gap))
-  if (g >= 0) return '#1e8a82'
-  if (g >= -3) return '#5aa39c'
-  if (g >= -6) return '#c99a2e'
-  if (g >= -10) return '#d98f4a'
-  return '#d1653c'
+  if (g >= 0) return '#12a05c'
+  if (g >= -3) return '#5cc48a'
+  if (g >= -6) return '#ffc233'
+  if (g >= -10) return '#ff8a3d'
+  return '#f0552d'
 }
+
+// sobre estos fondos claros el número va en oscuro (con blanco no se lee)
+const FONDO_CLARO = new Set(['#ffc233', '#5cc48a'])
 
 function etiquetaGap(gap) {
   const r = Math.round(gap)
@@ -45,7 +48,7 @@ export default function Heatmap({ filas, onCelda, termino = 'prueba', prueba = '
                   <td
                     key={c.area}
                     className={bg ? '' : 'empty'}
-                    style={bg ? { background: bg } : undefined}
+                    style={bg ? { background: bg, color: FONDO_CLARO.has(bg) ? '#16262e' : undefined } : undefined}
                     title={
                       c.gap == null
                         ? 'Sin dato'

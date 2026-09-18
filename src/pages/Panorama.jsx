@@ -4,6 +4,7 @@ import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
 import { BarRow, BarraRangos, KpiRow, LeyendaRangos, PruebaToggle, Semaforo } from '../components/ui.jsx'
 import { CargandoQsqs } from '../components/Estado.jsx'
+import Hero from '../components/Hero.jsx'
 import EvolucionBarras from '../components/charts/EvolucionBarras.jsx'
 import DistribucionBandas from '../components/charts/DistribucionBandas.jsx'
 import Heatmap from '../components/Heatmap.jsx'
@@ -11,15 +12,19 @@ import { useFiltro, useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
 import {
   GRADOS_Q26,
+  RANGOS_QSQS,
+  avanceGlobalSaber11,
   competenciasEvolucionQsqs,
   evolucionAreasQsqs,
   heatmapMunicipioArea,
   heatmapMunicipioAreaQsqs,
   media,
   promedio,
+  rangoQsqs,
   resumenAreasQsqs,
   resumenAreasS11,
   resumenCompetenciasQsqs,
+  resumenQsqsInstitucion,
   semaforo,
 } from '../lib/model.js'
 
@@ -54,6 +59,7 @@ export default function Panorama() {
 }
 
 function PanoramaSaber11({ lista, alcance }) {
+  const { modelo } = useModelo()
   const conS11 = lista.filter((d) => d.global != null)
   const areas = useMemo(() => resumenAreasS11(lista), [lista])
   const heat = useMemo(() => heatmapMunicipioArea(lista), [lista])
@@ -62,6 +68,19 @@ function PanoramaSaber11({ lista, alcance }) {
   const promColombia = media(conS11.map((d) => d.s11?.ref?.Colombia).filter((x) => x != null))
   const gapGlobal = promGlobal != null && promColombia != null ? promGlobal - promColombia : null
   const enAlerta = conS11.filter((d) => d.estadoGlobal === 'alert').length
+
+  // "Buenas noticias": lo que ya va bien, con cifras reales
+  const superan = conS11.filter((d) => d.gapGlobalCol != null && d.gapGlobalCol >= 0).length
+  const buenas = conS11.filter((d) => d.global >= 300).length
+  const avance = avanceGlobalSaber11(conS11)
+  const logros = [
+    superan > 0 && { num: fmtNum(superan), texto: 'instituciones igualan o superan el promedio de Colombia' },
+    avance?.mejoran > 0 && {
+      num: fmtNum(avance.mejoran),
+      texto: `de ${fmtNum(avance.total)} instituciones subieron su puntaje global frente a ${avance.previo}`,
+    },
+    buenas > 0 && { num: fmtNum(buenas), texto: 'instituciones están en banda Bueno o Excelente (300 puntos o más)' },
+  ].filter(Boolean)
 
   const focos = [...areas]
     .filter((a) => a.gap != null)
@@ -91,7 +110,11 @@ function PanoramaSaber11({ lista, alcance }) {
   return (
     <>
       {promGlobal != null && (
-        <div className="narrativa">
+        <Hero
+          kicker={`Saber 11${modelo.anioSaber11 ? ` · ${modelo.anioSaber11}` : ''}`}
+          titulo={`Así van los aprendizajes en ${alcance}`}
+          logros={logros}
+        >
           En <strong>{alcance}</strong>, el puntaje global promedio de Saber 11 es{' '}
           <strong>{fmtNum(promGlobal)}</strong>
           {gapGlobal != null && (
@@ -112,8 +135,9 @@ function PanoramaSaber11({ lista, alcance }) {
               La prueba con mayor brecha es <strong>{focos[0].area}</strong> (
               {fmtNum(focos[0].gap, 1)} pts vs Colombia).
             </>
-          )}
-        </div>
+          )}{' '}
+          Este panorama te ayuda a ver dónde acompañar primero para nivelar los aprendizajes.
+        </Hero>
       )}
 
       <KpiRow items={kpis} />
@@ -257,6 +281,30 @@ function PanoramaQsqs({ lista, alcance }) {
   const [gradoDist, setGradoDist] = useState('5')
   const distGrado = useMemo(() => competenciasEvolucionQsqs(listaRes, { grado: gradoDist }), [listaRes, gradoDist])
 
+  // "Buenas noticias" de QSQS 2026: quiénes mejoraron de la Aplicación 1 a la 2
+  const avances = useMemo(() => {
+    const res = listaRes.map((d) => resumenQsqsInstitucion(d)).filter(Boolean)
+    const ambas = res.filter((q) => q.a1 != null && q.a2 != null)
+    const puesto = (v) => RANGOS_QSQS.findIndex((r) => r.nombre === rangoQsqs(v)?.nombre)
+    return {
+      ambas: ambas.length,
+      mejoran: ambas.filter((q) => q.cambio > 0).length,
+      suben: ambas.filter((q) => puesto(q.a2) > puesto(q.a1)).length,
+      altos: res.filter((q) => q.enA2 && q.rango?.nombre === 'Alto').length,
+      prom1: media(ambas.map((q) => q.a1)),
+      prom2: media(ambas.map((q) => q.a2)),
+    }
+  }, [listaRes])
+  const logrosQ = [
+    avances.mejoran > 0 && {
+      num: fmtNum(avances.mejoran),
+      texto: `de ${fmtNum(avances.ambas)} instituciones mejoraron de la Aplicación 1 a la 2`,
+    },
+    avances.suben > 0 && { num: fmtNum(avances.suben), texto: 'instituciones subieron de rango de desempeño' },
+    avances.altos > 0 && { num: fmtNum(avances.altos), texto: 'instituciones ya están en rango Alto (70 % o más)' },
+  ].filter(Boolean)
+  const cambioProm = avances.prom1 != null && avances.prom2 != null ? avances.prom2 - avances.prom1 : null
+
   const partProm = promedio(
     conQsqs.filter((d) => d.participacionQsqs != null),
     (d) => d.participacionQsqs,
@@ -267,28 +315,48 @@ function PanoramaQsqs({ lista, alcance }) {
   return (
     <>
       {partProm != null && (
-        <div className="narrativa">
-          En <strong>{alcance}</strong>, la participación promedio en QSQS es <strong>{pct(partProm)}</strong>
-          {qsqsInfo && (
+        <Hero
+          kicker={q26Listo ? 'QSQS · 2026' : 'QSQS'}
+          titulo={`Así avanza Quiero Ser Quiero Saber en ${alcance}`}
+          logros={logrosQ}
+        >
+          {cambioProm != null ? (
             <>
-              {' '}(aplicación {qsqsInfo.aplicacion} de {qsqsInfo.anio})
-            </>
-          )}
-          . {bajaParticipacion.length > 0 ? (
-            <>
-              <strong>{bajaParticipacion.length}</strong> de {conQsqs.length} instituciones tienen menos de
-              50% de participación.
+              En <strong>{alcance}</strong>, las <strong>{fmtNum(avances.ambas)}</strong> instituciones con las dos
+              aplicaciones pasaron de <strong>{pct(avances.prom1)}</strong> de aciertos en la Aplicación 1 a{' '}
+              <strong>{pct(avances.prom2)}</strong> en la Aplicación 2 (
+              <strong>
+                {cambioProm >= 0 ? '+' : '−'}
+                {fmtNum(Math.abs(cambioProm) * 100, 1)}
+              </strong>{' '}
+              puntos).{' '}
             </>
           ) : (
-            <>Ninguna institución está por debajo del 50% de participación.</>
-          )}{' '}
+            <>
+              En <strong>{alcance}</strong>, la participación promedio en QSQS es <strong>{pct(partProm)}</strong>
+              {qsqsInfo && (
+                <>
+                  {' '}(aplicación {qsqsInfo.aplicacion} de {qsqsInfo.anio})
+                </>
+              )}
+              .{' '}
+              {bajaParticipacion.length > 0 ? (
+                <>
+                  <strong>{bajaParticipacion.length}</strong> de {conQsqs.length} instituciones tienen menos de
+                  50% de participación.
+                </>
+              ) : (
+                <>Ninguna institución está por debajo del 50% de participación.</>
+              )}{' '}
+            </>
+          )}
           {focos[0]?.gap != null && (
             <>
               La competencia con mayor brecha es <strong>{focos[0].competencia}</strong> (
-              {pct(focos[0].gap)} vs Colombia).
+              {pct(focos[0].gap)} vs Colombia): ahí es donde más se puede acompañar.
             </>
           )}
-        </div>
+        </Hero>
       )}
 
       <KpiRow

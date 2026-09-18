@@ -1,7 +1,7 @@
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 import { BANDAS_GLOBAL, bandaGlobal } from '../../data/saber11.js'
 
-const COLOR = { alert: '#d1653c', warn: '#c99a2e', ok: '#1e8a82' }
+const COLOR = { alert: '#f0552d', warn: '#f5a300', ok: '#12a05c' }
 
 export default function DistribucionBandas({ instituciones }) {
   const conteo = BANDAS_GLOBAL.map((b) => ({ ...b, n: 0 }))

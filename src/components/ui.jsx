@@ -86,7 +86,7 @@ export function NivelesBar({ niveles, area, anio }) {
   const vals = (niveles || []).map((v) => (v == null ? 0 : v))
   const total = vals.reduce((a, b) => a + b, 0) || 1
   return (
-    <div className="niveles" title="Distribución de estudiantes por nivel de desempeño (pasá el cursor por cada tramo)">
+    <div className="niveles" title="Distribución de estudiantes por nivel de desempeño (pasa el cursor por cada tramo)">
       {vals.map((v, i) => {
         const c = cfg[i] || {}
         const w = (v / total) * 100

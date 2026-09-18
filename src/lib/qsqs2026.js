@@ -14,10 +14,10 @@ export const AREAS_Q26 = ['Lenguaje', 'Matemáticas']
 
 /** Rangos de desempeño de QSQS (los mismos que usan los reportes de la SED). */
 export const RANGOS_QSQS = [
-  { nombre: 'Muy bajo', hasta: 0.21, color: '#d1653c', texto: 'menos de 21 %' },
-  { nombre: 'Bajo', hasta: 0.4, color: '#d99a4e', texto: '21 % a 39 %' },
-  { nombre: 'Medio', hasta: 0.7, color: '#6a9c96', texto: '40 % a 69 %' },
-  { nombre: 'Alto', hasta: Infinity, color: '#1e8a82', texto: '70 % o más' },
+  { nombre: 'Muy bajo', hasta: 0.21, color: '#f0552d', texto: 'menos de 21 %' },
+  { nombre: 'Bajo', hasta: 0.4, color: '#ffab2e', texto: '21 % a 39 %' },
+  { nombre: 'Medio', hasta: 0.7, color: '#2bb3a3', texto: '40 % a 69 %' },
+  { nombre: 'Alto', hasta: Infinity, color: '#12a05c', texto: '70 % o más' },
 ]
 
 /** 0..1 -> rango de desempeño ({nombre, color, ...}) o null si no hay dato. */

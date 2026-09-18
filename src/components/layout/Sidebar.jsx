@@ -55,7 +55,7 @@ export default function Sidebar({ modo, unica }) {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 2l8 3v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3z" fill="#1E8A82" />
+          <path d="M12 2l8 3v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3z" fill="#ffc233" />
           <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <div>

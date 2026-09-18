@@ -80,7 +80,7 @@ export async function fetchDatos(token, vista = 'resumen', esperas = [0, 2000, 4
       falloDeRed
         ? 'No se pudo conectar con el servidor después de varios intentos. Revisá tu conexión a internet e intentá de nuevo.'
         : 'El servidor no devolvió datos después de varios intentos. ' +
-            'Puede que la API no esté autorizada, o que Apps Script esté saturado — probá recargar.',
+            'Puede que la API no esté autorizada, o que Apps Script esté saturado — prueba a recargar.',
     )
   })()
 

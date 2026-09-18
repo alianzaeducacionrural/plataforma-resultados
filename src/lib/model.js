@@ -435,6 +435,25 @@ export function historicoGlobalPromedio(lista) {
     .sort((a, b) => a.anio - b.anio)
 }
 
+/**
+ * Cuántas instituciones subieron su puntaje global Saber 11 frente al año anterior (solo cuentan
+ * las que tienen dato en los dos años). Devuelve null si no hay histórico.
+ */
+export function avanceGlobalSaber11(lista) {
+  const anios = lista.flatMap((i) => i.historico?.anios ?? [])
+  if (!anios.length) return null
+  const anio = Math.max(...anios)
+  let mejoran = 0
+  let total = 0
+  for (const i of lista) {
+    const g = i.historico?.global
+    if (g?.[anio] == null || g?.[anio - 1] == null) continue
+    total++
+    if (g[anio] > g[anio - 1]) mejoran++
+  }
+  return total ? { anio, previo: anio - 1, mejoran, total } : null
+}
+
 /** Resumen por área Saber 11 sobre una lista de instituciones. */
 export function resumenAreasS11(lista) {
   return AREAS_S11.map((area) => {

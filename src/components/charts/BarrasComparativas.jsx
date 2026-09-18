@@ -2,7 +2,7 @@ import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, T
 import { AREAS_S11 } from '../../lib/model.js'
 import { AREAS_CORTO as CORTO } from '../../data/saber11.js'
 
-const PALETA = ['#2b3440', '#1e8a82', '#c99a2e', '#d1653c', '#6a8caf', '#8a6aaf']
+const PALETA = ['#0f3d4c', '#0aa596', '#f5a300', '#f0552d', '#2e90fa', '#7a5af8']
 
 /** Barras agrupadas: eje X = prueba de Saber 11, una serie por institución, con el valor sobre cada barra. */
 export default function BarrasComparativas({ instituciones }) {

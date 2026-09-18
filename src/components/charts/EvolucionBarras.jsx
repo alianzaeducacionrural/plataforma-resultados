@@ -1,8 +1,8 @@
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-const COLOR_A1 = '#9fb4c7'
-const COLOR_A2 = '#1e8a82'
-const COLOR_REF = '#2b3440'
+const COLOR_A1 = '#ffc233'
+const COLOR_A2 = '#0aa596'
+const COLOR_REF = '#0f3d4c'
 
 /** Parte una etiqueta larga en varias líneas (~22 caracteres) para el eje X. */
 function TickMultilinea({ x, y, payload }) {

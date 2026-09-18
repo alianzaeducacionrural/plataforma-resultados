@@ -127,7 +127,7 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
 
       <LeyendaRangos />
       <p className="faint" style={{ marginTop: 6 }}>
-        Hacé clic en una competencia para ver sus afirmaciones y, dentro de cada una, sus evidencias. "Cambio" y
+        Haz clic en una competencia para ver sus afirmaciones y, dentro de cada una, sus evidencias. "Cambio" y
         "vs {refKey === 'etc' ? 'Caldas' : 'Colombia'}" están en puntos porcentuales; s/d = no evaluada.
         {detalle.estado === 'cargando' && ' Cargando afirmaciones y evidencias…'}
         {detalle.estado === 'error' && ' No se pudo cargar el detalle por afirmación y evidencia.'}

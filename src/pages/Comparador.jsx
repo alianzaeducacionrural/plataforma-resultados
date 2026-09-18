@@ -152,7 +152,7 @@ export default function Comparador() {
         <PruebaToggle value={prueba} onChange={setPrueba} />
         <section className="panel">
           <div className="panel-head">
-            <h2>Elegí instituciones (hasta 6)</h2>
+            <h2>Elige instituciones (hasta 6)</h2>
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div className="field grow">
@@ -262,7 +262,7 @@ export default function Comparador() {
             </section>
           </>
         ) : (
-          <p className="muted">Elegí al menos 2 instituciones (o un municipio) para comparar.</p>
+          <p className="muted">Elige al menos 2 instituciones (o un municipio) para comparar.</p>
         )}
       </div>
     </>
