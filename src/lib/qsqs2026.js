@@ -145,6 +145,31 @@ export function arbolQsqs26(q26, filas) {
   return { competencias, sinAplicacion }
 }
 
+/**
+ * Resultado QSQS de UNA institución en las dos aplicaciones (para el listado): promedio de
+ * sus competencias (todas, o solo las de `area`), cambio y rango de la Aplicación 2.
+ * Si tiene datos en ambas aplicaciones, promedia solo las competencias evaluadas en las dos
+ * (así el cambio compara lo mismo con lo mismo); si solo tiene una, muestra esa.
+ * `grados` = cuántos grados (3°/5°/7°/9°) tienen resultado. Devuelve null si no hay resultados 2026.
+ */
+export function resumenQsqsInstitucion(inst, area = null) {
+  const cs = (inst.q26?.competencias ?? []).filter((c) => !area || c.area === area)
+  const pares = cs.filter((c) => c.a1 != null && c.a2 != null)
+  const base = pares.length ? pares : cs
+  const a1 = media(base.map((c) => c.a1))
+  const a2 = media(base.map((c) => c.a2))
+  if (a1 == null && a2 == null) return null
+  const grados = new Set(cs.filter((c) => c.a1 != null || c.a2 != null).map((c) => c.grado)).size
+  return {
+    a1,
+    a2,
+    cambio: a1 != null && a2 != null ? a2 - a1 : null,
+    rango: rangoQsqs(a2 ?? a1),
+    enA2: a2 != null,
+    grados,
+  }
+}
+
 // ---------------------------------------------------------------------
 // Agregados departamentales (sobre una lista de instituciones ya filtrada).
 // Los niveles (a1, a2) son promedios de las instituciones con dato en CADA aplicación;

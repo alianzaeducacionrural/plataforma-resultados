@@ -24,6 +24,7 @@ export {
   competenciasEvolucionQsqs,
   evolucionAreasQsqs,
   rangoQsqs,
+  resumenQsqsInstitucion,
 } from './qsqs2026.js'
 
 // Las 5 áreas de Saber 11, en orden canónico — la fuente única es data/saber11.js;

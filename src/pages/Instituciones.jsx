@@ -2,16 +2,15 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import FiltroGlobal from '../components/layout/FiltroGlobal.jsx'
-import { Dot, PruebaToggle } from '../components/ui.jsx'
+import { CargandoQsqs } from '../components/Estado.jsx'
+import { Delta, Dot, LeyendaRangos, PruebaToggle, RangoTag } from '../components/ui.jsx'
 import { useFiltro, useModelo } from '../state/store.jsx'
 import { fmtNum, pct } from '../lib/format.js'
-import { bandaGlobal } from '../lib/model.js'
-import { exportarCsv, filasInstitucionesCsv } from '../lib/exportar.js'
+import { AREAS_Q26, bandaGlobal, resumenQsqsInstitucion } from '../lib/model.js'
+import { exportarCsv, filasInstitucionesCsv, filasInstitucionesQsqsCsv } from '../lib/exportar.js'
 
 const colsS11 = (anio) => [
   { key: 'nombre', label: 'Institución' },
-  { key: 'municipio', label: 'Municipio' },
-  { key: 'zonaSector', label: 'Zona · sector', noSort: true },
   { key: 'global', label: anio ? `Puntaje ${anio}` : 'Puntaje Saber 11', num: true },
   { key: 'banda', label: 'Banda', noSort: true },
   { key: 'clasificacionActual', label: 'Clasificación' },
@@ -21,37 +20,47 @@ const colsS11 = (anio) => [
 
 const COLS_QSQS = [
   { key: 'nombre', label: 'Institución' },
-  { key: 'municipio', label: 'Municipio' },
-  { key: 'zonaSector', label: 'Zona · sector', noSort: true },
-  { key: 'participacionQsqs', label: 'Participación', num: true },
-  { key: 'aplicacion', label: 'Aplicación', noSort: true },
+  { key: 'q1', label: 'Aplicación 1', num: true },
+  { key: 'q2', label: 'Aplicación 2', num: true },
+  { key: 'qcambio', label: 'Cambio', num: true },
+  { key: 'qrango', label: 'Rango' },
   { key: 'gradosEvaluados', label: 'Grados evaluados', num: true },
 ]
+
+// Orden del rango QSQS (Muy bajo = 0 … Alto = 3) para poder ordenar esa columna.
+const RANGO_ORDEN = { 'Muy bajo': 0, Bajo: 1, Medio: 2, Alto: 3 }
 
 // Orden de mejor a peor, para poder ordenar la columna de clasificación.
 const CLASIF_RANK = { 'A+': 0, A: 1, B: 2, C: 3, D: 4 }
 const COLOR_CLASIF = { 'A+': 'ok', A: 'ok', B: 'ok', C: 'warn', D: 'alert' }
 
-function gradosEvaluados(d) {
-  return d.qsqs?.porGrado?.filter((g) => g.registrados)?.length ?? 0
-}
-
 export default function Instituciones() {
-  const { modelo } = useModelo()
+  const { modelo, q26Estado } = useModelo()
   const { aplicar } = useFiltro()
   const nav = useNavigate()
   const [prueba, setPrueba] = useState('saber11')
+  const [areaQ, setAreaQ] = useState('') // '' = todas las áreas de QSQS
+  const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
   const [sort, setSort] = useState({ field: 'nombre', dir: 'asc' })
   const cols = prueba === 'saber11' ? colsS11(modelo.anioSaber11) : COLS_QSQS
 
   const filas = useMemo(() => {
     // Cada pestaña muestra solo instituciones con datos de esa prueba —
     // nada de filas con guiones por no tener QSQS (o Saber 11).
-    const list = aplicar(modelo.instituciones).filter((d) => (prueba === 'saber11' ? d.tieneS11 : d.tieneQsqs))
+    const list = aplicar(modelo.instituciones)
+      .filter((d) => (prueba === 'saber11' ? d.tieneS11 : d.tieneQsqs))
+      .map((d) => (prueba === 'qsqs' ? { ...d, q: resumenQsqsInstitucion(d, areaQ || null) } : d))
     const dir = sort.dir === 'asc' ? 1 : -1
-    const numerico = ['global', 'gapGlobalCol', 'participacionQsqs', 'clasificacionActual', 'gradosEvaluados'].includes(
-      sort.field,
-    )
+    const numerico = [
+      'global',
+      'gapGlobalCol',
+      'clasificacionActual',
+      'gradosEvaluados',
+      'q1',
+      'q2',
+      'qcambio',
+      'qrango',
+    ].includes(sort.field)
     return [...list].sort((a, b) => {
       if (numerico) {
         // sin dato siempre al final
@@ -64,7 +73,7 @@ export default function Instituciones() {
       }
       return dir * cmp(a, b, sort.field)
     })
-  }, [modelo, aplicar, sort, prueba])
+  }, [modelo, aplicar, sort, prueba, areaQ])
 
   const toggleSort = (field) =>
     setSort((s) =>
@@ -80,16 +89,37 @@ export default function Instituciones() {
           type="button"
           className="btn ghost sm"
           onClick={() => {
-            const { cols: c, filas: f } = filasInstitucionesCsv(filas)
-            exportarCsv('instituciones', c, f)
+            const { cols: c, filas: f } = prueba === 'qsqs' ? filasInstitucionesQsqsCsv(filas) : filasInstitucionesCsv(filas)
+            exportarCsv(prueba === 'qsqs' ? 'instituciones-qsqs' : 'instituciones', c, f)
           }}
         >
           ⬇ Exportar CSV ({filas.length})
         </button>
       </PageHeader>
-      <FiltroGlobal />
+      <FiltroGlobal>
+        {prueba === 'qsqs' && (
+          <div className="field field-area">
+            <label htmlFor="fg-area-q">Área</label>
+            <select id="fg-area-q" value={areaQ} onChange={(e) => setAreaQ(e.target.value)}>
+              <option value="">Todas</option>
+              {AREAS_Q26.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </FiltroGlobal>
       <div className="content">
-        <PruebaToggle value={prueba} onChange={setPrueba} />
+        <PruebaToggle
+          value={prueba}
+          onChange={(p) => {
+            setPrueba(p)
+            setSort({ field: 'nombre', dir: 'asc' })
+          }}
+        />
+        {prueba === 'qsqs' && q26Cargando && <CargandoQsqs />}
         <section className="panel">
           <div className="panel-head">
             <h2>
@@ -119,13 +149,11 @@ export default function Instituciones() {
                 {filas.map((d) => (
                   <tr key={d.dane} className="clickable" onClick={() => nav(`/instituciones/${d.dane}`)}>
                     <td>
-                      <div className="cell-stack">
+                      <div className="cell-stack" title={`DANE ${d.dane}`}>
                         <span className="cell-strong">{d.nombre}</span>
-                        <span className="cell-sub">DANE {d.dane}</span>
+                        <span className="cell-sub">{[d.municipio, d.zona, d.sector].filter(Boolean).join(' · ')}</span>
                       </div>
                     </td>
-                    <td>{d.municipio}</td>
-                    <td>{[d.zona, d.sector].filter(Boolean).join(' · ') || '—'}</td>
                     {prueba === 'saber11' ? (
                       <FilaSaber11 d={d} />
                     ) : (
@@ -151,10 +179,14 @@ export default function Instituciones() {
               pruebas de Saber 11 donde la institución está claramente bajo el promedio nacional.{' '}
             </>
           ) : (
-            <>"Participación" = estudiantes que presentaron la prueba sobre los registrados. </>
+            <>
+              Aplicación 1 y 2 = promedio de aciertos en las competencias de la institución (solo las evaluadas en
+              ambas aplicaciones); "Cambio" = Aplicación 2 − Aplicación 1; "Rango" corresponde a la Aplicación 2 (o a la 1 si aún no hay 2).{' '}
+            </>
           )}
           <Link to="/comparador">Comparar instituciones →</Link>
         </p>
+        {prueba === 'qsqs' && <LeyendaRangos />}
       </div>
     </>
   )
@@ -214,11 +246,28 @@ function FilaSaber11({ d }) {
 }
 
 function FilaQsqs({ d }) {
+  const q = d.q
   return (
     <>
-      <td className="num">{d.participacionQsqs != null ? pct(d.participacionQsqs) : '—'}</td>
-      <td>{d.qsqs?.anio ? `${d.qsqs.aplicacion}/${d.qsqs.anio}` : <span className="faint">s/d</span>}</td>
-      <td className="num">{d.tieneQsqs ? fmtNum(gradosEvaluados(d)) : '—'}</td>
+      <td className="num">{q?.a1 != null ? pct(q.a1) : '—'}</td>
+      <td className="num">{q?.a2 != null ? pct(q.a2) : '—'}</td>
+      <td className="num">{q?.cambio != null ? <Delta valor={q.cambio} modo="pct" /> : '—'}</td>
+      <td>
+        {q?.rango ? (
+          <>
+            <RangoTag rango={q.rango} />
+            {!q.enA2 && (
+              <span className="faint" title="Todavía no tiene resultados de la Aplicación 2">
+                {' '}
+                · Aplic. 1
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="faint">s/d</span>
+        )}
+      </td>
+      <td className="num">{q ? fmtNum(q.grados) : '—'}</td>
     </>
   )
 }
@@ -228,7 +277,11 @@ function valNum(d, field) {
     const r = CLASIF_RANK[d.clasificacionActual]
     return r == null ? null : 4 - r // A+ = 4 (mejor) ... D = 0, mismo sentido que "más alto = mejor"
   }
-  if (field === 'gradosEvaluados') return d.tieneQsqs ? gradosEvaluados(d) : null
+  if (field === 'gradosEvaluados') return d.q?.grados ?? null
+  if (field === 'q1') return d.q?.a1 ?? null
+  if (field === 'q2') return d.q?.a2 ?? null
+  if (field === 'qcambio') return d.q?.cambio ?? null
+  if (field === 'qrango') return d.q?.rango ? RANGO_ORDEN[d.q.rango.nombre] : null
   return d[field] ?? null
 }
 function cmp(a, b, field) {

@@ -60,6 +60,34 @@ export function filasInstitucionesCsv(instituciones) {
   return { cols, filas }
 }
 
+/** Listado de instituciones en la pestaña QSQS: Aplicación 1, Aplicación 2, cambio y rango. */
+export function filasInstitucionesQsqsCsv(instituciones) {
+  const cols = [
+    'DANE',
+    'Institución',
+    'Municipio',
+    'Zona',
+    'Sector',
+    'Aplicación 1 (%)',
+    'Aplicación 2 (%)',
+    'Cambio (puntos porcentuales)',
+    'Rango (Aplicación 2)',
+  ]
+  const p = (v) => (v != null ? (v * 100).toFixed(1) : '')
+  const filas = instituciones.map((d) => [
+    d.dane,
+    d.nombre,
+    d.municipio,
+    d.zona,
+    d.sector,
+    p(d.q?.a1),
+    p(d.q?.a2),
+    p(d.q?.cambio),
+    d.q?.rango?.nombre ?? '',
+  ])
+  return { cols, filas }
+}
+
 /** Dispara el diálogo de impresión (el usuario elige "Guardar como PDF"). */
 export function imprimir() {
   window.print()
