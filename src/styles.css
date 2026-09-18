@@ -177,9 +177,24 @@ h3 {
 .creditos-item.sed img {
   height: 38px;
 }
+/* la dependencia de cada entidad (Área de Educación / Calidad Educativa) va destacada, con una
+   marca dorada al lado, para que se lea de un vistazo quién está detrás de la plataforma */
 .creditos-item span {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+.creditos-item span::before {
+  content: '';
+  width: 4px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--sun);
+  flex-shrink: 0;
 }
 /* versión sobre fondo claro: pie de página en móvil y en el PDF */
 .creditos.clara {
@@ -194,7 +209,7 @@ h3 {
   color: var(--text-faint);
 }
 .creditos.clara .creditos-item span {
-  color: var(--text-dim);
+  color: var(--primary);
 }
 .creditos-pie {
   display: none;

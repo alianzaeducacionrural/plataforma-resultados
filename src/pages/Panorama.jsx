@@ -407,7 +407,7 @@ function PanoramaQsqs({ lista, alcance }) {
           <section className="panel">
             <div className="panel-head">
               <h2>Evolución 2026 · Aplicación 1 → Aplicación 2</h2>
-              <span className="muted">% de acierto promedio por grado · barra oscura = Colombia (Aplic. 2)</span>
+              <span className="muted">% de acierto promedio por grado · bajo cada grupo, el cambio de la Aplicación 1 a la 2</span>
             </div>
             <div className="grid cols-2">
               {evo.map((a) => (
@@ -415,7 +415,7 @@ function PanoramaQsqs({ lista, alcance }) {
                   <h3 style={{ margin: '0 0 4px' }}>{a.area}</h3>
                   <EvolucionBarras
                     alto={300}
-                    filas={a.grados.map((g) => ({ etiqueta: `Grado ${g.grado}°`, a1: g.a1, a2: g.a2, refv: g.col2 }))}
+                    filas={a.grados.map((g) => ({ etiqueta: `Grado ${g.grado}°`, a1: g.a1, a2: g.a2 }))}
                   />
                 </div>
               ))}

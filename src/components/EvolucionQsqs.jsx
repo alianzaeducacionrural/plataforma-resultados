@@ -64,7 +64,9 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
     <>
       <div className="panel-head" style={{ marginTop: 6 }}>
         <h2>Evolución 2026 · Aplicación 1 → Aplicación 2</h2>
-        <span className="muted">% de acierto · referencia: {refNombre}</span>
+        <span className="muted">
+          % de acierto · bajo cada grupo, el cambio de la Aplicación 1 a la 2 (la tabla compara con {refNombre})
+        </span>
       </div>
 
       <div className="grado-tabs">
@@ -94,9 +96,7 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
           etiqueta: `${c.area}\n${c.texto}`,
           a1: c.a1,
           a2: c.a2,
-          refv: c.ref?.[refKey + '2'] ?? null,
         }))}
-        etiquetaRef={refNombre}
       />
 
       <div style={{ marginTop: 14 }}>

@@ -219,7 +219,7 @@ function AnalisisQsqs({ lista }) {
         <section className="panel">
           <div className="panel-head">
             <h2>Evolución por competencia · Aplicación 1 → 2 (2026)</h2>
-            <span className="muted">% de acierto promedio · barra oscura = Colombia (Aplic. 2)</span>
+            <span className="muted">% de acierto promedio · bajo cada grupo, el cambio de la Aplicación 1 a la 2</span>
           </div>
           <div className="grado-tabs">
             {GRADOS_Q26.map((g) => (
@@ -233,7 +233,6 @@ function AnalisisQsqs({ lista }) {
               etiqueta: `${c.area}\n${c.competencia}`,
               a1: c.a1,
               a2: c.a2,
-              refv: c.ref.col2,
             }))}
           />
         </section>
