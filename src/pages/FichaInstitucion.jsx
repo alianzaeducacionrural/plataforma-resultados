@@ -5,6 +5,7 @@ import PageHeader from '../components/layout/PageHeader.jsx'
 import { BarRow, Delta, KpiRow, LeyendaNiveles, NivelesBar, PruebaToggle } from '../components/ui.jsx'
 import { CargandoQsqs, ErrorEstado } from '../components/Estado.jsx'
 import EvolucionQsqs from '../components/EvolucionQsqs.jsx'
+import HistoricoSaber11 from '../components/HistoricoSaber11.jsx'
 import { useDetalleQsqs26 } from '../hooks/useDetalleQsqs26.js'
 import DotPlotAreas from '../components/charts/DotPlotAreas.jsx'
 import MapaDesempeno from '../components/MapaDesempeno.jsx'
@@ -61,7 +62,9 @@ export default function FichaInstitucion() {
     return a?.ref?.[ref] ?? null
   }
 
-  const kpis = [
+  const kpis = !s
+    ? []
+    : [
     {
       label: 'Puntaje global Saber 11',
       value: inst.global != null ? fmtNum(inst.global) : '—',
@@ -82,11 +85,11 @@ export default function FichaInstitucion() {
     },
   ]
   if (inst.clasificacionActual) {
-    const anioClasif = inst.historico.anios[inst.historico.anios.length - 1]
+    const anioClasif = inst.historico.anioClasif
     kpis.push({
       label: `Clasificación ICFES ${anioClasif}`,
       value: inst.clasificacionActual,
-      sub: 'A+ a D · ver histórico →',
+      sub: 'clasificación de planteles, A+ a D',
       tono: ['A+', 'A', 'B'].includes(inst.clasificacionActual) ? 'ok' : inst.clasificacionActual === 'C' ? '' : 'alert',
     })
   }
@@ -101,7 +104,24 @@ export default function FichaInstitucion() {
   // Saber 11 y QSQS quedan en pestañas separadas (pedido explícito: los datos de las dos
   // pruebas no deben mezclarse en una sola vista). Si la institución solo tiene una de
   // las dos, no hace falta mostrar el selector — se fuerza esa pestaña.
-  const tabEfectivo = s && q ? tab : s ? 'saber11' : 'qsqs'
+  // "Con Saber 11" incluye a quien solo tiene histórico de años anteriores.
+  const conSaber = !!(s || inst.historico)
+  const tabEfectivo = conSaber && q ? tab : conSaber ? 'saber11' : 'qsqs'
+  const irA = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // Índice de la página: solo las secciones que esta institución sí tiene
+  const secciones = (
+    tabEfectivo === 'saber11'
+      ? [
+          s && { id: 'sec-comparacion', t: 'Comparación' },
+          s && pares.length > 1 && { id: 'sec-mapa', t: 'Mapa del municipio' },
+          s && { id: 'sec-detalle', t: 'Detalle por prueba' },
+          inst.historico && { id: 'evolucion', t: 'Evolución por año' },
+        ]
+      : [
+          q && { id: 'sec-qsqs', t: 'Participación' },
+          inst.q26 && { id: 'sec-qsqs-evo', t: 'Evolución 1 → 2' },
+        ]
+  ).filter(Boolean)
   const gradosConDato = q?.porGrado?.filter((g) => g.registrados) ?? []
   const qsqsKpis = q
     ? [
@@ -139,11 +159,6 @@ export default function FichaInstitucion() {
             ))}
           </select>
         </label>
-        {inst.historico && (
-          <Link to={`/historico?dane=${inst.dane}`} className="btn ghost sm">
-            Ver histórico
-          </Link>
-        )}
         <Link to={`/ruta?dane=${inst.dane}`} className="btn primary sm">
           Ruta de mejoramiento
         </Link>
@@ -158,13 +173,26 @@ export default function FichaInstitucion() {
           {q?.anio ? ` · QSQS aplicación ${q.aplicacion}/${q.anio}` : ''}
         </div>
 
-        {s && q && <PruebaToggle value={tab} onChange={setTab} />}
+        {conSaber && q && <PruebaToggle value={tab} onChange={setTab} />}
 
-        <KpiRow items={tabEfectivo === 'saber11' ? kpis : qsqsKpis} />
+        {(tabEfectivo === 'saber11' ? kpis : qsqsKpis).length > 0 && (
+          <KpiRow items={tabEfectivo === 'saber11' ? kpis : qsqsKpis} />
+        )}
+
+        {secciones.length > 1 && (
+          <nav className="ficha-nav no-print" aria-label="Secciones de la ficha">
+            <span className="ficha-nav-txt">Ir a</span>
+            {secciones.map((x) => (
+              <button key={x.id} type="button" onClick={() => irA(x.id)}>
+                {x.t}
+              </button>
+            ))}
+          </nav>
+        )}
 
         {/* ---------- Reporte comparativo ---------- */}
         {tabEfectivo === 'saber11' && s && (
-          <div className="grid cols-2">
+          <div className="grid cols-2 ficha-seccion" id="sec-comparacion">
             <section className="panel">
               <div className="panel-head">
                 <h2>Comparación por prueba</h2>
@@ -199,7 +227,7 @@ export default function FichaInstitucion() {
         )}
 
         {tabEfectivo === 'saber11' && s && pares.length > 1 && (
-          <section className="panel">
+          <section className="panel ficha-seccion" id="sec-mapa">
             <div className="panel-head">
               <h2>Mapa de desempeño — {inst.municipio}</h2>
               <span className="muted">{pares.length} instituciones con Saber 11 · esta institución resaltada</span>
@@ -209,8 +237,17 @@ export default function FichaInstitucion() {
         )}
 
         {/* ---------- Saber 11 (detalle) ---------- */}
-        {tabEfectivo === 'saber11' && (
-        <section className="panel">
+        {tabEfectivo === 'saber11' && !s && (
+          <section className="panel">
+            <p className="muted">
+              Esta institución no tiene resultados de Saber 11{modelo.anioSaber11 ? ` ${modelo.anioSaber11}` : ''} cargados.
+              Más abajo está lo que sí hay de años anteriores.
+            </p>
+          </section>
+        )}
+
+        {tabEfectivo === 'saber11' && s && (
+        <section className="panel ficha-seccion" id="sec-detalle">
           <div className="panel-head">
             <h2>Saber 11 — detalle por prueba, grado 11°</h2>
             <span className="muted">
@@ -218,9 +255,7 @@ export default function FichaInstitucion() {
             </span>
           </div>
 
-          {!s ? (
-            <p className="muted">Esta institución no tiene resultados de Saber 11 cargados.</p>
-          ) : (
+          {(
             <>
               <BarRow
                 label={<strong>Puntaje global</strong>}
@@ -278,9 +313,12 @@ export default function FichaInstitucion() {
         </section>
         )}
 
+        {/* ---------- Evolución por año (Saber 11) ---------- */}
+        {tabEfectivo === 'saber11' && <HistoricoSaber11 inst={inst} modelo={modelo} />}
+
         {/* ---------- QSQS ---------- */}
         {tabEfectivo === 'qsqs' && (
-        <section className="panel">
+        <section className="panel ficha-seccion" id="sec-qsqs">
           <div className="panel-head">
             <h2>Quiero Ser Quiero Saber</h2>
             {q?.participacion != null && (

@@ -177,16 +177,21 @@ h3 {
 .creditos-item.sed img {
   height: 38px;
 }
-/* la dependencia de cada entidad (Área de Educación / Unidad de Calidad) va destacada, con una
-   marca dorada al lado, para que se lea de un vistazo quién está detrás de la plataforma */
+/* la dependencia de cada entidad (Área de Educación / Unidad de Calidad) va con letra más grande y
+   una marca dorada al lado, para que se lea de un vistazo quién está detrás de la plataforma */
 .creditos-item span {
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.01em;
   color: #fff;
+}
+/* línea que separa una entidad de la siguiente */
+.creditos-item + .creditos-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  padding-top: 12px;
 }
 .creditos-item span::before {
   content: '';
@@ -210,6 +215,13 @@ h3 {
 }
 .creditos.clara .creditos-item span {
   color: var(--primary);
+}
+/* en el pie claro las entidades van en fila: el separador es vertical */
+.creditos.clara .creditos-item + .creditos-item {
+  border-top: none;
+  padding-top: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 36px;
 }
 .creditos-pie {
   display: none;
@@ -1494,4 +1506,79 @@ body {
   .cmp-selector {
     grid-template-columns: 1fr;
   }
+}
+
+/* Ficha de la institución: índice de secciones, chips de clasificación por año */
+.ficha-seccion {
+  scroll-margin-top: 84px;
+}
+.ficha-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ficha-nav-txt {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-right: 2px;
+}
+.ficha-nav button {
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ficha-nav button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.clasif-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.clasif-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px 7px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  border-top: 4px solid var(--k);
+  background: linear-gradient(180deg, #fff 40%, color-mix(in srgb, var(--k) 16%, #fff));
+  box-shadow: var(--shadow);
+}
+.clasif-anio {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.clasif-chip strong {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--primary);
+}
+
+/* leyenda de las gráficas de línea: la muestra es un trazo (continuo o punteado), como en la gráfica */
+.evo-chip-sm {
+  padding: 3px 12px 3px 9px;
+  font-size: 11.5px;
+}
+.evo-chip i.evo-linea {
+  width: 20px;
+  height: 0;
+  border-radius: 0;
+  background: none;
+  border-top: 3px solid var(--c);
+}
+.evo-chip i.evo-linea.punteada {
+  border-top: 2px dashed var(--c);
 }

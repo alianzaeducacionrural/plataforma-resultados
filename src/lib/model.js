@@ -347,9 +347,25 @@ export function buildModel(datos) {
     const prioritarias = areasS11.filter((a) => a.estado === 'alert').map((a) => a.area)
     const gapGlobalCol = s?.global != null && s?.ref?.Colombia != null ? s.global - s.ref.Colombia : null
     const hRaw = historicoPorDane.get(c.dane)
+    // La base histórica a veces no trae el último año de una institución que sí tiene Saber 11 de ese
+    // año (es la misma fuente: coinciden en 154 de 155 casos). Ese hueco se completa con el dato de
+    // Saber 11, sin pisar nunca lo que la base histórica ya trae.
+    if (hRaw && s?.anio && s.global != null && hRaw.global[s.anio] == null) {
+      hRaw.anios.add(s.anio)
+      hRaw.global[s.anio] = s.global
+      for (const a of s.areas) {
+        if (a.ee == null || hRaw.areas[a.area]?.[s.anio] != null) continue
+        if (!hRaw.areas[a.area]) hRaw.areas[a.area] = {}
+        hRaw.areas[a.area][s.anio] = a.ee
+      }
+    }
     const anios = hRaw ? [...hRaw.anios].sort() : []
-    const historico = hRaw ? { anios, global: hRaw.global, clasificacion: hRaw.clasificacion, areas: hRaw.areas } : null
-    const clasificacionActual = anios.length ? hRaw.clasificacion[anios[anios.length - 1]] || null : null
+    // la clasificación "actual" es la del último año que la trae (puede ser anterior al último dato)
+    const anioClasif = hRaw ? [...anios].reverse().find((a) => hRaw.clasificacion[a]) ?? null : null
+    const historico = hRaw
+      ? { anios, global: hRaw.global, clasificacion: hRaw.clasificacion, areas: hRaw.areas, anioClasif }
+      : null
+    const clasificacionActual = anioClasif != null ? hRaw.clasificacion[anioClasif] : null
     const filasQ26 = q26g?.porDane.get(c.dane)
     let q26 = null
     if (filasQ26?.length) {

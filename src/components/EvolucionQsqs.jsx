@@ -1,10 +1,14 @@
 import { useMemo, useState } from 'react'
 import EvolucionBarras from './charts/EvolucionBarras.jsx'
+import LineHistorico from './charts/LineHistorico.jsx'
 import { Delta, LeyendaRangos, RangoTag } from './ui.jsx'
 import { pct } from '../lib/format.js'
 import { AREAS_Q26, GRADOS_Q26, arbolQsqs26 } from '../lib/model.js'
 
 const CLASE_NIVEL = { C: 'evo-comp', A: 'evo-af', E: 'evo-ev' }
+
+const APLICACIONES = ['Aplicación 1', 'Aplicación 2']
+const puntos = (v) => (v == null ? null : Math.round(v * 1000) / 10) // fracción → % con 1 decimal
 
 const celda = (v) => (v == null ? <span className="faint">s/d</span> : pct(v))
 
@@ -59,10 +63,12 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
   const sin = arbol.sinAplicacion[grado] || {}
   const cambios = comps.map((c) => c.delta).filter((d) => d != null)
   const cambioProm = cambios.length ? (cambios.reduce((a, b) => a + b, 0) / cambios.length) * 100 : null
+  // Si el grado no tiene ningún resultado se muestra solo el aviso (nada de gráficas ni tablas vacías)
+  const hayDatos = comps.some((c) => c.a1 != null || c.a2 != null)
 
   return (
     <>
-      <div className="panel-head" style={{ marginTop: 6 }}>
+      <div className="panel-head ficha-seccion" id="sec-qsqs-evo" style={{ marginTop: 6 }}>
         <h2>Evolución 2026 · Aplicación 1 → Aplicación 2</h2>
         <span className="muted">
           % de acierto · bajo cada grupo, el cambio de la Aplicación 1 a la 2 (la tabla compara con {refNombre})
@@ -91,6 +97,10 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
         </p>
       )}
 
+      {!hayDatos && !sin.a1 && !sin.a2 && <p className="muted">Este grado no tiene resultados de QSQS 2026.</p>}
+
+      {hayDatos && (
+      <>
       <EvolucionBarras
         filas={comps.map((c) => ({
           etiqueta: `${c.area}\n${c.texto}`,
@@ -124,6 +134,37 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
         })}
       </div>
 
+      {comps.some((c) => c.a1 != null || c.a2 != null) && (
+        <div style={{ marginTop: 18 }}>
+          <div className="panel-head">
+            <h2>Cada competencia frente a Caldas y Colombia</h2>
+            <span className="muted">grado {grado}° · % de acierto</span>
+          </div>
+          <div className="grid cols-2" style={{ marginTop: 10 }}>
+            {comps
+              .filter((c) => c.a1 != null || c.a2 != null)
+              .map((c) => (
+                <div key={c.id}>
+                  <h3 style={{ margin: '0 0 4px', fontSize: 13 }}>
+                    <span className="faint">{c.area} · </span>
+                    {c.texto}
+                  </h3>
+                  <LineHistorico
+                    anios={APLICACIONES}
+                    series={[
+                      { key: 'inst', label: 'Esta institución', color: '#0aa596', data: { [APLICACIONES[0]]: puntos(c.a1), [APLICACIONES[1]]: puntos(c.a2) } },
+                      { key: 'etc', label: 'Caldas', color: '#f5a300', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref?.etc1), [APLICACIONES[1]]: puntos(c.ref?.etc2) } },
+                      { key: 'col', label: 'Colombia', color: '#0f3d4c', dashed: true, data: { [APLICACIONES[0]]: puntos(c.ref?.col1), [APLICACIONES[1]]: puntos(c.ref?.col2) } },
+                    ]}
+                    decimales={1}
+                    unidad=" %"
+                  />
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
       <LeyendaRangos />
       <p className="faint" style={{ marginTop: 6 }}>
         Haz clic en una competencia para ver sus afirmaciones y, dentro de cada una, sus evidencias. "Cambio" y
@@ -131,6 +172,8 @@ export default function EvolucionQsqs({ modelo, refSel, detalle }) {
         {detalle.estado === 'cargando' && ' Cargando afirmaciones y evidencias…'}
         {detalle.estado === 'error' && ' No se pudo cargar el detalle por afirmación y evidencia.'}
       </p>
+      </>
+      )}
     </>
   )
 }

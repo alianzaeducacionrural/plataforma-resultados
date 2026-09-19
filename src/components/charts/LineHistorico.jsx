@@ -86,7 +86,18 @@ export default function LineHistorico({ anios, series, domain, unidad = '', deci
           formatter={(v) => (v == null ? 's/d' : `${v}${unidad}`)}
           contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d9dee3' }}
         />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Legend
+          content={() => (
+            <div className="evo-leyenda" style={{ paddingTop: 2 }}>
+              {series.map((s) => (
+                <span key={s.key} className="evo-chip evo-chip-sm">
+                  <i className={'evo-linea' + (s.dashed ? ' punteada' : '')} style={{ '--c': s.color }} />
+                  {s.label}
+                </span>
+              ))}
+            </div>
+          )}
+        />
         {series.map((s) => (
           <Line
             key={s.key}

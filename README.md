@@ -24,7 +24,7 @@ npm run dev
 | `#/areas` | Análisis por área/competencia | maestro |
 | `#/comparador` | Comparar instituciones o municipios | maestro |
 | `#/ruta` | Ruta de mejoramiento | maestro |
-| `#/historico` | Evolución entre aplicaciones | maestro |
+| `#/historico` | Histórico departamental (la evolución de cada institución está en su ficha; `?dane=` redirige allá) | maestro |
 | `#/documentos` | Documentos de apoyo, datos cargados y descargas (`#/datos` redirige acá) | maestro |
 
 Con un token de institución (`#/instituciones/:dane?token=XXXX`), la app entra directo a la
