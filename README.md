@@ -23,7 +23,7 @@ npm run dev
 | `#/instituciones/:dane` | Ficha / reporte comparativo de una institución | maestro o de institución |
 | `#/areas` | Análisis por área/competencia | maestro |
 | `#/comparador` | Comparar instituciones o municipios | maestro |
-| `#/ruta` | Ruta de mejoramiento | maestro |
+| `#/ruta` | Ruta de mejoramiento departamental (a quién acompañar primero); la de cada institución está en su ficha | maestro |
 | `#/historico` | Histórico departamental (la evolución de cada institución está en su ficha; `?dane=` redirige allá) | maestro |
 | `#/documentos` | Documentos de apoyo, datos cargados y descargas (`#/datos` redirige acá) | maestro |
 

@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useInstitucionParam } from '../App.jsx'
 import PageHeader from '../components/layout/PageHeader.jsx'
 import { BarRow, Delta, KpiRow, LeyendaNiveles, NivelesBar, PruebaToggle } from '../components/ui.jsx'
 import { CargandoQsqs, ErrorEstado } from '../components/Estado.jsx'
 import EvolucionQsqs from '../components/EvolucionQsqs.jsx'
 import HistoricoSaber11 from '../components/HistoricoSaber11.jsx'
+import { RutaQsqs, RutaSaber11 } from '../components/RutaInstitucion.jsx'
 import { useDetalleQsqs26 } from '../hooks/useDetalleQsqs26.js'
 import DotPlotAreas from '../components/charts/DotPlotAreas.jsx'
 import MapaDesempeno from '../components/MapaDesempeno.jsx'
@@ -34,6 +35,17 @@ export default function FichaInstitucion() {
   // QSQS 2026: las competencias vienen con el panel; afirmaciones y evidencias se piden aparte
   const detalleQ26 = useDetalleQsqs26(inst)
   const q26Cargando = q26Estado === 'cargando' || q26Estado === 'espera'
+  // Un enlace con ?ruta=1 (p. ej. desde la vista departamental) baja directo a la ruta de mejoramiento
+  const [params] = useSearchParams()
+  const irARuta = params.get('ruta') === '1'
+  useEffect(() => {
+    if (!irARuta) return
+    const t = setTimeout(
+      () => document.getElementById('sec-ruta')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      700,
+    )
+    return () => clearTimeout(t)
+  }, [irARuta, inst?.dane])
 
   const pares = useMemo(
     () => (inst ? modelo.instituciones.filter((i) => i.municipio === inst.municipio && i.tieneS11) : []),
@@ -116,10 +128,12 @@ export default function FichaInstitucion() {
           s && pares.length > 1 && { id: 'sec-mapa', t: 'Mapa del municipio' },
           s && { id: 'sec-detalle', t: 'Detalle por prueba' },
           inst.historico && { id: 'evolucion', t: 'Evolución por año' },
+          s && { id: 'sec-ruta', t: 'Ruta de mejoramiento' },
         ]
       : [
           q && { id: 'sec-qsqs', t: 'Participación' },
           inst.q26 && { id: 'sec-qsqs-evo', t: 'Evolución 1 → 2' },
+          inst.q26 && !q26Cargando && { id: 'sec-ruta', t: 'Ruta de mejoramiento' },
         ]
   ).filter(Boolean)
   const gradosConDato = q?.porGrado?.filter((g) => g.registrados) ?? []
@@ -159,9 +173,11 @@ export default function FichaInstitucion() {
             ))}
           </select>
         </label>
-        <Link to={`/ruta?dane=${inst.dane}`} className="btn primary sm">
-          Ruta de mejoramiento
-        </Link>
+        {secciones.some((x) => x.id === 'sec-ruta') && (
+          <button type="button" className="btn primary sm no-print" onClick={() => irA('sec-ruta')}>
+            Ruta de mejoramiento
+          </button>
+        )}
         <button type="button" className="btn ghost sm no-print" onClick={imprimir}>
           ⬇ Exportar informe (PDF)
         </button>
@@ -316,6 +332,9 @@ export default function FichaInstitucion() {
         {/* ---------- Evolución por año (Saber 11) ---------- */}
         {tabEfectivo === 'saber11' && <HistoricoSaber11 inst={inst} modelo={modelo} />}
 
+        {/* ---------- Ruta de mejoramiento (Saber 11) ---------- */}
+        {tabEfectivo === 'saber11' && s && <RutaSaber11 inst={inst} />}
+
         {/* ---------- QSQS ---------- */}
         {tabEfectivo === 'qsqs' && (
         <section className="panel ficha-seccion" id="sec-qsqs">
@@ -430,6 +449,9 @@ export default function FichaInstitucion() {
           )}
         </section>
         )}
+
+        {/* ---------- Ruta de mejoramiento (QSQS) ---------- */}
+        {tabEfectivo === 'qsqs' && inst.q26 && !q26Cargando && <RutaQsqs modelo={modelo} detalle={detalleQ26} />}
       </div>
     </>
   )
