@@ -44,7 +44,7 @@ src/
   data/saber11.js          catálogo de competencias ICFES + bandas de puntaje
   components/              layout (Sidebar, FiltroGlobal, PageHeader), charts, ui
   pages/                   Panorama, Instituciones, FichaInstitucion, AnalisisArea,
-                           Comparador, RutaMejoramiento, Historico, Documentos
+                           Comparador (pestaña "Referenciación"), RutaMejoramiento, Historico, Documentos
 ```
 
 ## Deploy

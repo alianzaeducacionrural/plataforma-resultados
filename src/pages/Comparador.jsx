@@ -154,7 +154,7 @@ export default function Comparador() {
 
   return (
     <>
-      <PageHeader titulo="Comparador">
+      <PageHeader titulo="Referenciación">
         {elegidas.length >= 2 && (
           <button
             type="button"
@@ -162,7 +162,7 @@ export default function Comparador() {
             onClick={() => {
               const cols = ['Métrica', ...elegidas.map((i) => i.nombre)]
               const filasCsv = filas.map((f) => [f.k, ...elegidas.map((i) => f.raw ? f.raw(i) ?? '' : String(f.get(i)))])
-              exportarCsv('comparador-instituciones-' + prueba, cols, filasCsv)
+              exportarCsv('referenciacion-instituciones-' + prueba, cols, filasCsv)
             }}
           >
             ⬇ Exportar CSV

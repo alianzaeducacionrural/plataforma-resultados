@@ -44,7 +44,7 @@ const NAV = [
   { to: '/', end: true, icon: I.panorama, label: 'Panorama' },
   { to: '/instituciones', icon: I.inst, label: 'Instituciones' },
   { to: '/areas', icon: I.areas, label: 'Análisis por área' },
-  { to: '/comparador', icon: I.comparador, label: 'Comparador' },
+  { to: '/comparador', icon: I.comparador, label: 'Referenciación' },
   { to: '/ruta', icon: I.ruta, label: 'Ruta de mejoramiento' },
   { to: '/historico', icon: I.historico, label: 'Histórico' },
   { to: '/documentos', icon: I.documentos, label: 'Documentos y datos' },

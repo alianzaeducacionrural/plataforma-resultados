@@ -184,7 +184,7 @@ export default function Instituciones() {
               ambas aplicaciones); "Cambio" = Aplicación 2 − Aplicación 1; "Rango" corresponde a la Aplicación 2 (o a la 1 si aún no hay 2).{' '}
             </>
           )}
-          <Link to="/comparador">Comparar instituciones →</Link>
+          <Link to="/comparador">Referenciar instituciones →</Link>
         </p>
         {prueba === 'qsqs' && <LeyendaRangos />}
       </div>
