@@ -295,7 +295,9 @@ export function RutaSaber11({ inst }) {
       </div>
 
       <div className="narrativa">
-        {prioritarias.length > 0 ? (
+        {inst.s11?.soloHistorico ? (
+          <>De esta institución no se tiene el detalle de aprendizajes del ICFES, así que no se puede armar la ruta de Saber 11.</>
+        ) : prioritarias.length > 0 ? (
           <>
             Frente a Colombia, esta institución está claramente por debajo en{' '}
             <strong>{prioritarias.join(', ')}</strong>. Estos son los aprendizajes donde más estudiantes responden mal,

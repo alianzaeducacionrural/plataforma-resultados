@@ -84,6 +84,7 @@ export function LeyendaRangos() {
 export function NivelesBar({ niveles, area, anio }) {
   const cfg = nivelesDePrueba(area, anio)
   const vals = (niveles || []).map((v) => (v == null ? 0 : v))
+  if (!vals.length) return <span className="faint">s/d</span>
   const total = vals.reduce((a, b) => a + b, 0) || 1
   return (
     <div className="niveles" title="Distribución de estudiantes por nivel de desempeño (pasa el cursor por cada tramo)">

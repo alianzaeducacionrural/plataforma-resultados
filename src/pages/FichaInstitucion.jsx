@@ -90,11 +90,15 @@ export default function FichaInstitucion() {
       unit: 'pts',
       tono: semaforo(gapGlobal, 'global'),
     },
-    {
-      label: 'Presentaron Saber 11',
-      value: s?.presentes != null ? fmtNum(s.presentes) : '—',
-      sub: s?.inscritos != null ? `de ${fmtNum(s.inscritos)} inscritos` : '',
-    },
+    ...(s?.presentes != null
+      ? [
+          {
+            label: 'Presentaron Saber 11',
+            value: fmtNum(s.presentes),
+            sub: s?.inscritos != null ? `de ${fmtNum(s.inscritos)} inscritos` : '',
+          },
+        ]
+      : []),
   ]
   if (inst.clasificacionActual) {
     const anioClasif = inst.historico.anioClasif
@@ -323,7 +327,14 @@ export default function FichaInstitucion() {
                   </tbody>
                 </table>
               </div>
-              <LeyendaNiveles anio={s.anio} />
+              {s.soloHistorico ? (
+                <p className="faint">
+                  De esta institución solo se tienen los puntajes de {s.anio} (global y por prueba) de la base de
+                  resultados de la Secretaría; no hay niveles de desempeño ni aprendizajes del ICFES.
+                </p>
+              ) : (
+                <LeyendaNiveles anio={s.anio} />
+              )}
             </>
           )}
         </section>

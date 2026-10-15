@@ -333,9 +333,38 @@ export function buildModel(datos) {
     })
   }
 
+  // Instituciones con puntajes del último año en la base histórica pero sin el archivo del ICFES
+  // (p. ej. se incorporaron después): se arma un Saber 11 resumido — puntaje global y por prueba contra
+  // Colombia y Caldas — para que aparezcan en la plataforma. No hay niveles ni aprendizajes.
+  const anioUltimoS11 = Math.max(0, ...[...s11.values()].map((x) => x.anio ?? 0)) || null
+  const s11DesdeHistorico = (h) => {
+    if (!h || anioUltimoS11 == null || h.global[anioUltimoS11] == null) return null
+    const a = anioUltimoS11
+    return {
+      periodo: null,
+      anio: a,
+      matriculados: null,
+      inscritos: null,
+      presentes: null,
+      conResultados: null,
+      global: h.global[a],
+      globalDesv: null,
+      ref: { Colombia: refColombiaHist.Global?.[a] ?? null, ETC: refDepartamentoHist.Global?.[a] ?? null },
+      areas: AREAS_S11.filter((area) => h.areas[area]?.[a] != null).map((area) => ({
+        area,
+        ee: h.areas[area][a],
+        desv: null,
+        niveles: [],
+        ref: { Colombia: refColombiaHist[area]?.[a] ?? null, ETC: refDepartamentoHist[area]?.[a] ?? null },
+      })),
+      aprendizajes: [],
+      soloHistorico: true,
+    }
+  }
+
   // ---------- filas combinadas ----------
   const instituciones = [...cat.values()].map((c) => {
-    const s = s11.get(c.dane) || null
+    const s = s11.get(c.dane) || s11DesdeHistorico(historicoPorDane.get(c.dane))
     const q = qsqs.get(c.dane) || null
     const areasS11 = s
       ? s.areas.map((a) => {
