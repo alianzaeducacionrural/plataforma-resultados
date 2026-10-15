@@ -58,6 +58,10 @@ export function semaforo(gap, tipo = 'area') {
   return 'alert'
 }
 
+// Nombres que vienen mal escritos en la hoja qsqs_instituciones de Drive.
+// shortcut: parche en código; al corregir la celda en el Sheet se puede borrar la entrada.
+const NOMBRES_CORREGIDOS = { '317873000833': 'LICEO INFANTIL APRENDER' }
+
 // =====================================================================
 export function buildModel(datos) {
   const qi = datos?.qsqs?.instituciones ?? []
@@ -412,7 +416,7 @@ export function buildModel(datos) {
     }
     return {
       ...c,
-      nombre: c.nombre || '(sin nombre)',
+      nombre: NOMBRES_CORREGIDOS[c.dane] || c.nombre || '(sin nombre)',
       municipio: c.municipio || '—',
       zona: c.zona || '',
       sector: c.sector || '',
